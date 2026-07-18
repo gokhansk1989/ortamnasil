@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes confetti {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(120px) rotate(280deg);
+    opacity: 0;
+  }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans;
+  }
+  a {
+    @apply text-primary no-underline;
+  }
+  a:hover {
+    @apply text-primary-dark;
+  }
+}
+
+@layer utilities {
+  .gradient-pink {
+    background: linear-gradient(135deg, #FF2D78, #7C3AED);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #FF2D78, #7C3AED);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-animated {
+    background: linear-gradient(270deg, #FF2D78, #7C3AED, #FF2D78);
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+  }
+  .sticker-shadow {
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.12));
+  }
+}

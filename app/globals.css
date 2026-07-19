@@ -32,17 +32,20 @@
 }
 
 @layer utilities {
+  .gradient-primary {
+    background: linear-gradient(135deg, #F97316, #EA580C);
+  }
   .gradient-pink {
-    background: linear-gradient(135deg, #FF2D78, #7C3AED);
+    background: linear-gradient(135deg, #F97316, #EA580C);
   }
   .gradient-text {
-    background: linear-gradient(135deg, #FF2D78, #7C3AED);
+    background: linear-gradient(135deg, #F97316, #0D9488);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .gradient-animated {
-    background: linear-gradient(270deg, #FF2D78, #7C3AED, #FF2D78);
+    background: linear-gradient(270deg, #F97316, #0D9488, #F97316);
     background-size: 200% 200%;
     animation: gradient-shift 4s ease infinite;
   }

@@ -94,9 +94,9 @@ function ItirafYazContent() {
                         className="rounded-pill border-2 px-4 py-[9px] text-[13.5px] transition-all"
                         style={{
                           fontWeight: on ? 600 : 400,
-                          background: on ? "linear-gradient(135deg, #FF2D78, #7C3AED)" : "#fff",
-                          borderColor: on ? "transparent" : "#E0D4DE",
-                          color: on ? "#fff" : "#3D3D56",
+                          background: on ? "linear-gradient(135deg, #F97316, #EA580C)" : "#fff",
+                          borderColor: on ? "transparent" : "#E7E0DA",
+                          color: on ? "#fff" : "#44403C",
                         }}
                       >
                         {r}
@@ -130,14 +130,14 @@ function ItirafYazContent() {
                 />
                 <div
                   className="mt-2 flex justify-between text-[12.5px]"
-                  style={{ color: n > 0 && n < 40 ? "#eb8a4a" : "#9090AC" }}
+                  style={{ color: n > 0 && n < 40 ? "#eb8a4a" : "#A8A29E" }}
                 >
                   <span>{hint}</span>
                   <span className="font-mono">{n}/600</span>
                 </div>
               </div>
 
-              <div className="rounded-xl bg-surface2 px-[18px] py-3.5 text-[13px] leading-relaxed text-purple">
+              <div className="rounded-xl bg-surface2 px-[18px] py-3.5 text-[13px] leading-relaxed text-teal">
                 ⚖️ <strong>Kısa hukuk köşesi:</strong> İsim verme, küfür etme, sır ifşa
                 etme. &ldquo;Müdür kötü&rdquo; değil &ldquo;toplantıda söz kesiliyor&rdquo; yaz — hem daha
                 faydalı hem dava riski yok.
@@ -148,9 +148,9 @@ function ItirafYazContent() {
                 disabled={!valid}
                 className="rounded-xl py-4 text-base font-bold text-white transition-all"
                 style={{
-                  background: valid ? "linear-gradient(135deg, #FF2D78, #7C3AED)" : "#E0D4DE",
+                  background: valid ? "linear-gradient(135deg, #F97316, #EA580C)" : "#E7E0DA",
                   cursor: valid ? "pointer" : "not-allowed",
-                  boxShadow: valid ? "0 0 30px rgba(255,45,120,.25)" : "none",
+                  boxShadow: valid ? "0 0 30px rgba(249,115,22,.20)" : "none",
                 }}
               >
                 Anonim yayınla 📮

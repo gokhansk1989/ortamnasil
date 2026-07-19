@@ -15,8 +15,8 @@ export default function GirisPage() {
   const clean = nick.trim().toLocaleLowerCase("tr");
 
   let statusMsg = "";
-  let statusColor = "#9090AC";
-  let borderColor = "#E0D4DE";
+  let statusColor = "#A8A29E";
+  let borderColor = "#E7E0DA";
   if (clean.length > 0 && clean.length < 3) {
     statusMsg = "Biraz daha uzun olsun — en az 3 karakter.";
     statusColor = "#eb8a4a";

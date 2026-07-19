@@ -14,7 +14,7 @@ export function MiniScore({ light }: { light: LightKey }) {
         <span
           key={i}
           className="h-[18px] w-1.5 rounded-[3px]"
-          style={{ background: i < filled ? color : "#F0E8EE" }}
+          style={{ background: i < filled ? color : "#F5F0EB" }}
         />
       ))}
     </div>

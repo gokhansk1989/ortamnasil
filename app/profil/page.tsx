@@ -62,7 +62,7 @@ export default function ProfilPage() {
             <div key={s.label} className="rounded-card border border-line bg-card p-5 text-center transition-all hover:shadow-sm">
               <div
                 className="text-[28px] font-bold"
-                style={{ color: s.highlight ? "#FF2D78" : "#1A1A2E" }}
+                style={{ color: s.highlight ? "#F97316" : "#1C1917" }}
               >
                 {s.value}
               </div>

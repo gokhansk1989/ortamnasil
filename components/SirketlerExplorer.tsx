@@ -116,8 +116,8 @@ export function SirketlerExplorer({ initialQuery = "" }: { initialQuery?: string
               className="inline-flex items-center gap-[7px] rounded-pill border-2 px-3.5 py-[7px] text-[12.5px] font-semibold transition-all"
               style={{
                 background: on ? l.badgeBg : "#fff",
-                borderColor: on ? l.dot : "#F0E8EE",
-                color: on ? l.badgeFg : "#6B6B8A",
+                borderColor: on ? l.dot : "#F5F0EB",
+                color: on ? l.badgeFg : "#78716C",
               }}
             >
               <span className="h-2 w-2 rounded-full" style={{ background: l.dot }} />

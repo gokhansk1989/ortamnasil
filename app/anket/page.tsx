@@ -62,7 +62,7 @@ function AnketContent() {
                       className="h-2 w-[26px] rounded-pill transition-colors"
                       style={{
                         background:
-                          i < step ? "#FF2D78" : i === step ? "#7C3AED" : "#F0E8EE",
+                          i < step ? "#F97316" : i === step ? "#0D9488" : "#F5F0EB",
                       }}
                     />
                   ))}
@@ -103,7 +103,7 @@ function AnketContent() {
                     onClick={() => setStep((s) => Math.max(0, s - 1))}
                     disabled={step === 0}
                     className="text-sm font-semibold disabled:cursor-default"
-                    style={{ color: step > 0 ? "#FF2D78" : "#E0D4DE" }}
+                    style={{ color: step > 0 ? "#F97316" : "#E7E0DA" }}
                   >
                     ← Geri
                   </button>

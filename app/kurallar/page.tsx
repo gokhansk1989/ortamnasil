@@ -39,7 +39,7 @@ export default function KurallarPage() {
     <div className="min-h-screen bg-paper">
       <Header />
       <div className="mx-auto max-w-[760px] px-8 pb-20 pt-12 max-md:px-5">
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-pill bg-purple/10 px-3.5 py-1 text-[12px] font-bold text-purple">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-pill bg-teal/10 px-3.5 py-1 text-[12px] font-bold text-teal">
           📜 KURALLAR
         </div>
         <h1 className="mb-2 text-[32px] font-bold tracking-[-.5px] text-ink">Topluluk kuralları</h1>

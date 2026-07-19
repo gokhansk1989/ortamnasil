@@ -109,7 +109,7 @@ export function scoreSurvey(answers: Answer[]): LightKey {
  * Yurt toplam ışığı: anket oranlarının ortalamasına aynı eşikler uygulanır
  * ("eşikler anketteki oranlarla aynı" — README). Hiç anket yoksa gri.
  */
-export function companyLight(surveyRatios: (number | null)[]): LightKey {
+export function dormLight(surveyRatios: (number | null)[]): LightKey {
   const valid = surveyRatios.filter((r): r is number => r !== null);
   if (valid.length === 0) return "gray";
   return lightFromRatio(valid.reduce((t, r) => t + r, 0) / valid.length);

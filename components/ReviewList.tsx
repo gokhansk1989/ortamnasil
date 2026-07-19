@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { LIGHTS } from "@/lib/lights";
-import type { ProfileReview } from "@/lib/companies";
+import type { ProfileReview } from "@/lib/directory";
 
 // İtiraf kartları + "faydalı" toggle. Prototipteki voted:{} state'inin karşılığı.
 export function ReviewList({ reviews }: { reviews: ProfileReview[] }) {

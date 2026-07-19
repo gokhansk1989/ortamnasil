@@ -24,18 +24,18 @@ export interface QueueCase {
   tagBg: string;
   tagFg: string;
   who: string;
-  company: string;
+  dorm: string;
   when: string;
   reports: number;
   text: string;
 }
 
 export const QUEUE: QueueCase[] = [
-  { id: 0, tag: "İSİM İFŞASI ŞÜPHESİ", tagBg: "#fbe7e3", tagFg: "#b23a28", who: "KızgınKanguru7", company: "KYK Atatürk Yurdu", when: "14 dk önce", reports: 3, text: "“Kat sorumlusu A**** K**** herkese bağırıyor, herkes biliyor zaten…” — otomatik filtre isim yakaladı, maskeleyip onaylanabilir." },
-  { id: 1, tag: "KÜFÜR / HAKARET", tagBg: "#fbf1db", tagFg: "#96690f", who: "PasifAgresifPanda", company: "Yıldız Kız Yurdu", when: "1 sa önce", reports: 5, text: "“Bu yurda yerleşeceğinize gidin [sansürlendi]. Yönetim tam bir [sansürlendi]…” — duygular anlaşılıyor ama üslup kural dışı." },
-  { id: 2, tag: "SPAM ŞÜPHESİ", tagBg: "#eef1f0", tagFg: "#5a6a66", who: "YeniÜye2026", company: "Kampüs Life Apart", when: "2 sa önce", reports: 2, text: "“Harika yurt harika yönetim harika ortam herkese tavsiye ederim 10/10” — hesap 1 saatlik, 6 yurda aynı yorum. 🤔" },
-  { id: 3, tag: "İSİM İFŞASI ŞÜPHESİ", tagBg: "#fbe7e3", tagFg: "#b23a28", who: "MesaideKayıp", company: "Huzur Erkek Yurdu", when: "3 sa önce", reports: 1, text: "“Yönetimdeki B. Hanım şikâyet edince güldü…” — baş harf + departman, sınırda vaka." },
-  { id: 4, tag: "KURAL DIŞI İÇERİK", tagBg: "#fbf1db", tagFg: "#96690f", who: "GizliVizyoner", company: "UniApart Residence", when: "5 sa önce", reports: 2, text: "“Yurt kontratındaki gizli maddeler şöyle: …” — ticari sır ifşası olabilir, hukuk köşesine takıldı." },
+  { id: 0, tag: "İSİM İFŞASI ŞÜPHESİ", tagBg: "#fbe7e3", tagFg: "#b23a28", who: "KızgınKanguru7", dorm: "KYK Atatürk Yurdu", when: "14 dk önce", reports: 3, text: "“Kat sorumlusu A**** K**** herkese bağırıyor, herkes biliyor zaten…” — otomatik filtre isim yakaladı, maskeleyip onaylanabilir." },
+  { id: 1, tag: "KÜFÜR / HAKARET", tagBg: "#fbf1db", tagFg: "#96690f", who: "PasifAgresifPanda", dorm: "Yıldız Kız Yurdu", when: "1 sa önce", reports: 5, text: "“Bu yurda yerleşeceğinize gidin [sansürlendi]. Yönetim tam bir [sansürlendi]…” — duygular anlaşılıyor ama üslup kural dışı." },
+  { id: 2, tag: "SPAM ŞÜPHESİ", tagBg: "#eef1f0", tagFg: "#5a6a66", who: "YeniÜye2026", dorm: "Kampüs Life Apart", when: "2 sa önce", reports: 2, text: "“Harika yurt harika yönetim harika ortam herkese tavsiye ederim 10/10” — hesap 1 saatlik, 6 yurda aynı yorum. 🤔" },
+  { id: 3, tag: "İSİM İFŞASI ŞÜPHESİ", tagBg: "#fbe7e3", tagFg: "#b23a28", who: "MesaideKayıp", dorm: "Huzur Erkek Yurdu", when: "3 sa önce", reports: 1, text: "“Yönetimdeki B. Hanım şikâyet edince güldü…” — baş harf + departman, sınırda vaka." },
+  { id: 4, tag: "KURAL DIŞI İÇERİK", tagBg: "#fbf1db", tagFg: "#96690f", who: "GizliVizyoner", dorm: "UniApart Residence", when: "5 sa önce", reports: 2, text: "“Yurt kontratındaki gizli maddeler şöyle: …” — ticari sır ifşası olabilir, hukuk köşesine takıldı." },
 ];
 
 export const KPIS = [

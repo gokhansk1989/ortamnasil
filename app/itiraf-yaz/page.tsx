@@ -51,7 +51,7 @@ function ItirafYazContent() {
           <>
             <div className="mb-7">
               <div className="mb-4 text-[13.5px] text-faint">
-                <Link href={`/sirket/${dormId}`}>← {dormName}</Link> profiline dön
+                <Link href={`/yurt/${dormId}`}>← {dormName}</Link> profiline dön
               </div>
               <h1 className="mb-2.5 text-[32px] font-bold tracking-[-.5px] text-ink">
                 İtirafını yaz ✍️
@@ -173,7 +173,7 @@ function ItirafYazContent() {
             </p>
             <div className="flex justify-center gap-3 max-md:flex-col">
               <Link
-                href={`/sirket/${dormId}`}
+                href={`/yurt/${dormId}`}
                 className="gradient-pink rounded-2xl px-[26px] py-3.5 text-[15px] font-bold text-white"
               >
                 İtirafını dosyada gör

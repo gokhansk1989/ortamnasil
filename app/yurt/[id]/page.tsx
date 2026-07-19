@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { ReviewList } from "@/components/ReviewList";
-import { getCompanyProfile } from "@/lib/companies";
+import { getDormProfile } from "@/lib/directory";
 import { LIGHTS } from "@/lib/lights";
 
-export default function CompanyPage({ params }: { params: { id: string } }) {
-  const c = getCompanyProfile(params.id);
+export default function DormPage({ params }: { params: { id: string } }) {
+  const c = getDormProfile(params.id);
   const light = LIGHTS[c.light];
 
   return (
@@ -14,7 +14,7 @@ export default function CompanyPage({ params }: { params: { id: string } }) {
       <div className="mx-auto max-w-[1100px] px-8 pb-20 pt-10 max-md:px-5">
         {/* Breadcrumb */}
         <div className="mb-6 text-[13.5px] text-faint">
-          <Link href="/sirketler">Yurtlar</Link> / {c.sector} /{" "}
+          <Link href="/yurtlar">Yurtlar</Link> / {c.sector} /{" "}
           <span className="text-ink">{c.name}</span>
         </div>
 
@@ -187,9 +187,9 @@ export default function CompanyPage({ params }: { params: { id: string } }) {
             </div>
             <div className="rounded-[22px] bg-surface2 p-5 text-[13px] leading-relaxed text-muted">
               <strong className="text-ink">Benzer ışıklılar:</strong>{" "}
-              <Link href="/sirket/marmara-kyk-yurdu">Marmara KYK Yurdu</Link>,{" "}
-              <Link href="/sirket/ege-kyk-yurdu">Ege KYK Yurdu</Link>,{" "}
-              <Link href="/sirket/campus-suit-apart">Campus Suit Apart</Link>
+              <Link href="/yurt/marmara-kyk-yurdu">Marmara KYK Yurdu</Link>,{" "}
+              <Link href="/yurt/ege-kyk-yurdu">Ege KYK Yurdu</Link>,{" "}
+              <Link href="/yurt/campus-suit-apart">Campus Suit Apart</Link>
             </div>
           </div>
         </div>

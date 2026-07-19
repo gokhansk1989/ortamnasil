@@ -2,28 +2,28 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { companies, sectors } from "@/lib/data";
-import { CompanyCard } from "./CompanyCard";
+import { dorms as featuredDorms, sectors } from "@/lib/data";
+import { DormCard } from "./DormCard";
 
-export function WeeklyCompanies() {
+export function WeeklyDorms() {
   const [active, setActive] = useState("Tümü");
 
   const list = useMemo(
     () =>
       active === "Tümü"
-        ? companies
-        : companies.filter((c) => c.sector.startsWith(active)),
+        ? featuredDorms
+        : featuredDorms.filter((c) => c.sector.startsWith(active)),
     [active],
   );
 
   return (
-    <section id="sirketler" className="px-16 pb-[72px] max-md:px-5">
+    <section id="yurtlar" className="px-16 pb-[72px] max-md:px-5">
       <div className="mx-auto max-w-[1100px]">
         <div className="mb-2 flex items-baseline justify-between">
           <h2 className="text-[26px] font-bold text-ink">
             Bu hafta konuşulanlar 🔥
           </h2>
-          <Link href="/sirketler" className="text-sm font-semibold text-primary">
+          <Link href="/yurtlar" className="text-sm font-semibold text-primary">
             Tümünü gör →
           </Link>
         </div>
@@ -50,7 +50,7 @@ export function WeeklyCompanies() {
 
         <div className="grid grid-cols-3 gap-5 max-lg:grid-cols-2 max-sm:grid-cols-1">
           {list.map((c) => (
-            <CompanyCard key={c.id} c={c} />
+            <DormCard key={c.id} c={c} />
           ))}
         </div>
       </div>

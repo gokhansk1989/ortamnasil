@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { directory, directorySectors } from "@/lib/companies";
+import { directory, directorySectors } from "@/lib/directory";
 import { CITIES } from "@/lib/dorms";
 import { LIGHTS, LIGHT_ORDER, type LightKey } from "@/lib/lights";
 
@@ -15,7 +15,7 @@ const sortOptions = [
   "En yeni eklenen",
 ];
 
-export function SirketlerExplorer({ initialQuery = "" }: { initialQuery?: string }) {
+export function YurtlarExplorer({ initialQuery = "" }: { initialQuery?: string }) {
   const [query, setQuery] = useState(initialQuery);
   const [sector, setSector] = useState("Tümü");
   const [city, setCity] = useState("Tümü");
@@ -136,7 +136,7 @@ export function SirketlerExplorer({ initialQuery = "" }: { initialQuery?: string
               return (
                 <Link
                   key={c.id}
-                  href={`/sirket/${c.id}`}
+                  href={`/yurt/${c.id}`}
                   className="grid grid-cols-[56px_1.4fr_1fr_auto] items-center gap-5 rounded-card border border-line bg-card px-6 py-[18px] text-inherit transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-hover max-md:grid-cols-[52px_1fr] max-md:gap-3"
                 >
                   <div
@@ -201,7 +201,7 @@ export function SirketlerExplorer({ initialQuery = "" }: { initialQuery?: string
             kurdeleyi sen kes. 🎀
           </p>
           <Link
-            href="/sirket-ekle"
+            href="/yurt-ekle"
             className="gradient-pink inline-block rounded-2xl px-[26px] py-3.5 text-[15px] font-bold text-white shadow-glow"
           >
             + Yurt ekle

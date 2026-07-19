@@ -10,7 +10,7 @@ export function HeroSearch() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
-    router.push(q ? `/sirketler?q=${encodeURIComponent(q)}` : "/sirketler");
+    router.push(q ? `/yurtlar?q=${encodeURIComponent(q)}` : "/yurtlar");
   }
 
   return (

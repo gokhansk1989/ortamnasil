@@ -1,8 +1,8 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { SirketlerExplorer } from "@/components/SirketlerExplorer";
+import { YurtlarExplorer } from "@/components/YurtlarExplorer";
 
-export default function SirketlerPage({
+export default function YurtlarPage({
   searchParams,
 }: {
   searchParams: { q?: string };
@@ -10,7 +10,7 @@ export default function SirketlerPage({
   return (
     <div className="min-h-screen bg-paper">
       <Header />
-      <SirketlerExplorer initialQuery={searchParams.q ?? ""} />
+      <YurtlarExplorer initialQuery={searchParams.q ?? ""} />
       <Footer />
     </div>
   );

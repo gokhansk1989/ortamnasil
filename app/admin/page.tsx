@@ -631,7 +631,7 @@ function CaseCard({
           {q.tag}
         </span>
         <span className="font-mono text-xs text-faint max-md:hidden">
-          {q.who} → {q.company}
+          {q.who} → {q.dorm}
         </span>
         <span className="ml-auto text-xs text-faint2">
           {q.when}

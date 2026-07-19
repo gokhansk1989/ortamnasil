@@ -6,7 +6,7 @@ export function Header({ nick = "SinirliPenguen42" }: { nick?: string }) {
     <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-paper/90 px-16 py-4 backdrop-blur-md max-md:px-5">
       <Logo />
       <nav className="flex items-center gap-6 text-[15px] text-body max-md:gap-3">
-        <Link href="/sirketler" className="text-body hover:text-primary max-md:hidden">
+        <Link href="/yurtlar" className="text-body hover:text-primary max-md:hidden">
           Yurtlar
         </Link>
         <Link href="/#nasil" className="text-body hover:text-primary max-md:hidden">

@@ -9,10 +9,10 @@ const stats = [
   { value: "3", label: "kırmızı ışık yakıldı", highlight: true },
 ];
 
-const mine: { company: string; id: string; light: LightKey; when: string; up: number }[] = [
-  { company: "KYK Atatürk Yurdu", id: "kyk-ataturk-yurdu", light: "green", when: "2 gün önce", up: 24 },
-  { company: "Huzur Erkek Yurdu", id: "huzur-erkek-yurdu", light: "yellow", when: "3 hafta önce", up: 41 },
-  { company: "Kampüs Life Apart", id: "kampus-life-apart", light: "red", when: "2 ay önce", up: 83 },
+const mine: { dorm: string; id: string; light: LightKey; when: string; up: number }[] = [
+  { dorm: "KYK Atatürk Yurdu", id: "kyk-ataturk-yurdu", light: "green", when: "2 gün önce", up: 24 },
+  { dorm: "Huzur Erkek Yurdu", id: "huzur-erkek-yurdu", light: "yellow", when: "3 hafta önce", up: 41 },
+  { dorm: "Kampüs Life Apart", id: "kampus-life-apart", light: "red", when: "2 ay önce", up: 83 },
 ];
 
 export default function ProfilPage() {
@@ -21,7 +21,7 @@ export default function ProfilPage() {
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-paper/90 px-16 py-4 backdrop-blur-md max-md:px-5">
         <Logo />
         <nav className="flex items-center gap-6 text-[15px]">
-          <Link href="/sirketler" className="text-body hover:text-primary max-md:hidden">Yurtlar</Link>
+          <Link href="/yurtlar" className="text-body hover:text-primary max-md:hidden">Yurtlar</Link>
           <Link href="/anket" className="gradient-pink rounded-pill px-6 py-2.5 font-semibold text-white shadow-glow transition-transform hover:scale-105">
             Yorum yaz
           </Link>
@@ -81,7 +81,7 @@ export default function ProfilPage() {
                 <span className="h-3 w-3 flex-shrink-0 rounded-full" style={{ background: l.dot }} />
                 <div className="flex-1">
                   <div className="text-[15.5px] font-semibold text-ink">
-                    {m.company} — <span style={{ color: l.badgeFg }}>{l.label}</span>
+                    {m.dorm} — <span style={{ color: l.badgeFg }}>{l.label}</span>
                   </div>
                   <div className="mt-[3px] text-[13.5px] text-faint">
                     {m.when} · {m.up} faydalı oyu

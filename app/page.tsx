@@ -3,7 +3,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { TrafficScale } from "@/components/TrafficScale";
 import { HeroSearch } from "@/components/HeroSearch";
-import { WeeklyCompanies } from "@/components/WeeklyCompanies";
+import { WeeklyDorms } from "@/components/WeeklyDorms";
 import { LogoFull } from "@/components/Logo";
 import { ticker, stats } from "@/lib/data";
 
@@ -66,7 +66,7 @@ export default function HomePage() {
 
           <p className="mt-5 text-sm text-faint">
             Yurdun listede yok mu?{" "}
-            <Link href="/sirket-ekle" className="font-semibold text-primary">
+            <Link href="/yurt-ekle" className="font-semibold text-primary">
               İlk ekleyen sen ol 🎀
             </Link>
           </p>
@@ -134,7 +134,7 @@ export default function HomePage() {
         ))}
       </section>
 
-      <WeeklyCompanies />
+      <WeeklyDorms />
 
       {/* NASIL ÇALIŞIR */}
       <section id="nasil" className="bg-ink px-16 py-16 max-md:px-5">
@@ -181,7 +181,7 @@ export default function HomePage() {
             </p>
           </div>
           <Link
-            href="/sirket-ekle"
+            href="/yurt-ekle"
             className="gradient-pink flex-shrink-0 rounded-2xl px-[30px] py-4 text-base font-bold text-white shadow-glow transition-transform hover:scale-105"
           >
             + Yurt ekle

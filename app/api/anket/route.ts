@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ratioOf, lightFromRatio, companyLight } from "@/lib/lights";
+import { ratioOf, lightFromRatio, dormLight } from "@/lib/lights";
 import type { Answer } from "@/lib/lights";
 import type { Light } from "@prisma/client";
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       where: { dormId },
       select: { ratio: true },
     });
-    const newLight = companyLight(allSurveys.map((s) => s.ratio));
+    const newLight = dormLight(allSurveys.map((s) => s.ratio));
 
     await prisma.dorm.update({
       where: { id: dormId },

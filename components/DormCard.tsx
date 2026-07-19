@@ -1,12 +1,12 @@
 import Link from "next/link";
-import type { CompanyCardData } from "@/lib/data";
+import type { DormCardData } from "@/lib/data";
 import { LightBadge } from "./LightBadge";
 import { MiniScore } from "./MiniScore";
 
-export function CompanyCard({ c }: { c: CompanyCardData }) {
+export function DormCard({ c }: { c: DormCardData }) {
   return (
     <Link
-      href={`/sirket/${c.id}`}
+      href={`/yurt/${c.id}`}
       className="group block rounded-card border border-line bg-card p-6 text-inherit transition-all duration-200 hover:-translate-y-1 hover:border-primary/20 hover:shadow-hover"
     >
       <div className="mb-4 flex items-center gap-3">

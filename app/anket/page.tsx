@@ -142,7 +142,7 @@ function AnketContent() {
                 </p>
                 <div className="flex justify-center gap-3 max-md:flex-col">
                   <Link
-                    href={`/sirket/${dormId}`}
+                    href={`/yurt/${dormId}`}
                     className="gradient-pink rounded-2xl px-[26px] py-3.5 text-[15px] font-bold text-white"
                   >
                     Yurt profilini gör

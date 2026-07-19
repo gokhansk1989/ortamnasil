@@ -11,7 +11,7 @@ const CONFETTI = [
   { emoji: "🎊", left: "75%", dur: "1.9s", delay: ".8s" },
 ];
 
-export default function SirketEklePage() {
+export default function YurtEklePage() {
   const [name, setName] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const dupWarn = name.toLocaleLowerCase("tr").includes("atatürk");

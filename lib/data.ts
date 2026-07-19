@@ -1,7 +1,7 @@
 import { ALL_DORMS, STATS, type Dorm } from "./dorms";
 import { LIGHTS, type LightKey } from "./lights";
 
-export interface CompanyCardData {
+export interface DormCardData {
   id: string;
   name: string;
   initial: string;
@@ -46,7 +46,7 @@ const PALETTE: Record<string, { bg: string; fg: string }> = {
   Özel: { bg: "#fdf3e4", fg: "#b07d1e" },
 };
 
-function dormToCard(d: Dorm, i: number): CompanyCardData {
+function dormToCard(d: Dorm, i: number): DormCardData {
   const pal = PALETTE[d.type] || PALETTE.Özel;
   return {
     id: d.id,
@@ -68,7 +68,7 @@ const featured = ALL_DORMS
   .sort((a, b) => b.reviewCount - a.reviewCount)
   .slice(0, 6);
 
-export const companies: CompanyCardData[] = featured.map(dormToCard);
+export const dorms: DormCardData[] = featured.map(dormToCard);
 
 export const ticker: TickerItem[] = [
   { dot: "#2eb586", who: "SabırlıAhtapot", what: "bir KYK yurduna yeşil ışık yaktı" },

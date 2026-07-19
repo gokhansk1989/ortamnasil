@@ -76,7 +76,7 @@ export interface ProfileReview {
   same: number;
   text: string;
 }
-export interface CompanyProfile {
+export interface DormProfile {
   id: string;
   name: string;
   initial: string;
@@ -96,7 +96,7 @@ export interface CompanyProfile {
   trend: string;
 }
 
-function generateProfile(d: Dorm): CompanyProfile {
+function generateProfile(d: Dorm): DormProfile {
   const pal = dormColor(d.type);
   return {
     id: d.id,
@@ -144,9 +144,9 @@ function generateProfile(d: Dorm): CompanyProfile {
   };
 }
 
-const profileCache = new Map<string, CompanyProfile>();
+const profileCache = new Map<string, DormProfile>();
 
-export function getCompanyProfile(id: string): CompanyProfile {
+export function getDormProfile(id: string): DormProfile {
   if (profileCache.has(id)) return profileCache.get(id)!;
   const dorm = ALL_DORMS.find((d) => d.id === id);
   const profile = dorm ? generateProfile(dorm) : generateProfile(ALL_DORMS[0]);

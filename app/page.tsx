@@ -137,25 +137,25 @@ export default function HomePage() {
       <WeeklyDorms />
 
       {/* NASIL ÇALIŞIR */}
-      <section id="nasil" className="bg-ink px-16 py-16 max-md:px-5">
+      <section id="nasil" className="bg-surface px-16 py-16 max-md:px-5">
         <div className="mx-auto max-w-[1100px]">
-          <h2 className="mb-2 text-center text-[28px] font-bold text-white">
+          <h2 className="mb-2 text-center text-[28px] font-bold text-ink">
             Nasıl çalışır?
           </h2>
-          <p className="mb-10 text-center text-onDarkMuted">
+          <p className="mb-10 text-center text-muted">
             Gayet basit, 3 adım. Toplam 3 dakika. ⏱️
           </p>
           <div className="grid grid-cols-3 gap-5 max-md:grid-cols-1">
             {steps.map((s) => (
-              <div key={s.tag} className="rounded-card border border-white/10 bg-white/[.06] p-7 transition-transform hover:scale-[1.02]">
+              <div key={s.tag} className="rounded-card border border-line bg-card p-7 shadow-lg transition-transform hover:scale-[1.02]">
                 <div className="mb-3 text-3xl">{s.emoji}</div>
-                <div className="mb-1 font-mono text-[12px] text-primary-light">
+                <div className="mb-1 font-mono text-[12px] font-medium text-primary">
                   {s.tag}
                 </div>
-                <div className="mb-2 text-lg font-semibold text-white">
+                <div className="mb-2 text-lg font-semibold text-ink">
                   {s.title}
                 </div>
-                <p className="text-[14.5px] leading-relaxed text-onDarkMuted">
+                <p className="text-[14.5px] leading-relaxed text-muted">
                   {s.body}
                 </p>
               </div>

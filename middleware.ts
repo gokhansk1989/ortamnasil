@@ -1,13 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createHmac } from "crypto";
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
-const SESSION_SECRET = process.env.SESSION_SECRET;
 const ADMIN_COOKIE = "ortam_admin";
 
-function verifyAdminCookie(cookieValue: string | undefined): boolean {
-  if (!cookieValue || !ADMIN_TOKEN || !SESSION_SECRET) return false;
-  const expected = createHmac("sha256", SESSION_SECRET).update(ADMIN_TOKEN).digest("hex");
+async function hmacSha256(secret: string, data: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function verifyAdminCookie(cookieValue: string | undefined): Promise<boolean> {
+  const token = process.env.ADMIN_TOKEN;
+  const secret = process.env.SESSION_SECRET;
+  if (!cookieValue || !token || !secret) return false;
+  const expected = await hmacSha256(secret, token);
   if (cookieValue.length !== expected.length) return false;
   let match = true;
   for (let i = 0; i < cookieValue.length; i++) {
@@ -46,12 +54,10 @@ const adminRateBuckets = new Map<string, { count: number; resetAt: number }>();
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const bucket = rateBuckets.get(ip);
-
   if (!bucket || now > bucket.resetAt) {
     rateBuckets.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
     return false;
   }
-
   bucket.count++;
   return bucket.count > RATE_MAX;
 }
@@ -59,27 +65,13 @@ function isRateLimited(ip: string): boolean {
 function isAdminRateLimited(ip: string): boolean {
   const now = Date.now();
   const bucket = adminRateBuckets.get(ip);
-
   if (!bucket || now > bucket.resetAt) {
     adminRateBuckets.set(ip, { count: 1, resetAt: now + ADMIN_RATE_WINDOW_MS });
     return false;
   }
-
   bucket.count++;
   return bucket.count > ADMIN_RATE_MAX;
 }
-
-function cleanBuckets() {
-  const now = Date.now();
-  for (const [ip, bucket] of rateBuckets) {
-    if (now > bucket.resetAt) rateBuckets.delete(ip);
-  }
-  for (const [ip, bucket] of adminRateBuckets) {
-    if (now > bucket.resetAt) adminRateBuckets.delete(ip);
-  }
-}
-
-setInterval(cleanBuckets, RATE_WINDOW_MS);
 
 function getClientIp(request: NextRequest): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
@@ -87,7 +79,7 @@ function getClientIp(request: NextRequest): string {
     || "unknown";
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin")) {
@@ -104,20 +96,19 @@ export function middleware(request: NextRequest) {
         }
         return NextResponse.next();
       }
-      if (verifyAdminCookie(cookie)) {
+      if (await verifyAdminCookie(cookie)) {
         return NextResponse.redirect(new URL("/admin", request.url));
       }
       return addHeaders(NextResponse.next());
     }
 
-    if (!verifyAdminCookie(cookie)) {
+    if (!(await verifyAdminCookie(cookie))) {
       return NextResponse.redirect(new URL("/admin/giris", request.url));
     }
   }
 
   if (request.method === "POST" && pathname.startsWith("/api/")) {
     const ip = getClientIp(request);
-
     if (isRateLimited(ip)) {
       return new NextResponse(
         JSON.stringify({ error: "Çok fazla istek. Biraz bekle." }),

@@ -1,28 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createHmac } from "crypto";
+import { signAdmin } from "@/lib/admin-auth";
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN!;
 if (!process.env.ADMIN_TOKEN) throw new Error("ADMIN_TOKEN environment variable is required");
 
-const ADMIN_SECRET = process.env.SESSION_SECRET!;
-if (!process.env.SESSION_SECRET) throw new Error("SESSION_SECRET environment variable is required");
-
 const COOKIE_NAME = "ortam_admin";
-
-function signAdmin(token: string): string {
-  return createHmac("sha256", ADMIN_SECRET).update(token).digest("hex");
-}
-
-export function verifyAdminCookie(cookieValue: string | undefined): boolean {
-  if (!cookieValue) return false;
-  const expected = signAdmin(ADMIN_TOKEN);
-  if (cookieValue.length !== expected.length) return false;
-  let match = true;
-  for (let i = 0; i < cookieValue.length; i++) {
-    if (cookieValue[i] !== expected[i]) match = false;
-  }
-  return match;
-}
 
 export async function POST(request: NextRequest) {
   try {

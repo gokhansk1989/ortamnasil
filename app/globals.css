@@ -19,6 +19,33 @@
   100% { background-position: 0% 50%; }
 }
 
+@keyframes emoji-fall {
+  0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.25; }
+  90% { opacity: 0.12; }
+  100% { transform: translateY(320px) rotate(50deg); opacity: 0; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes traffic-fill {
+  0% { width: 0; opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+@keyframes stagger-in {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 @layer base {
   body {
     @apply bg-paper text-ink font-sans;

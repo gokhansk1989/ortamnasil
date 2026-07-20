@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { directory, directorySectors } from "@/lib/directory";
 import { CITIES } from "@/lib/dorms";
-import { LIGHTS, LIGHT_ORDER, type LightKey } from "@/lib/lights";
+import { LIGHTS } from "@/lib/lights";
 
 const PAGE_SIZE = 20;
 
@@ -19,19 +19,20 @@ export function YurtlarExplorer({ initialQuery = "" }: { initialQuery?: string }
   const [query, setQuery] = useState(initialQuery);
   const [sector, setSector] = useState("Tümü");
   const [city, setCity] = useState("Tümü");
-  const [light, setLight] = useState<LightKey | null>(null);
   const [page, setPage] = useState(1);
+
+  const hasFilter = query.trim().length > 0 || city !== "Tümü";
 
   const results = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("tr");
+    if (!q && city === "Tümü") return [];
     return directory.filter(
       (r) =>
         (!q || r.name.toLocaleLowerCase("tr").includes(q) || r.meta.toLocaleLowerCase("tr").includes(q)) &&
         (sector === "Tümü" || r.sector === sector) &&
-        (city === "Tümü" || r.meta.includes(city)) &&
-        (!light || r.light === light),
+        (city === "Tümü" || r.meta.includes(city)),
     );
-  }, [query, sector, city, light]);
+  }, [query, sector, city]);
 
   const totalPages = Math.ceil(results.length / PAGE_SIZE);
   const paged = results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -41,10 +42,12 @@ export function YurtlarExplorer({ initialQuery = "" }: { initialQuery?: string }
   return (
     <div className="mx-auto max-w-[1100px] px-8 pb-20 pt-10 max-md:px-5">
       <h1 className="mb-6 text-[32px] font-bold tracking-[-.5px] text-ink">
-        Yurt dosyaları 📂{" "}
-        <span className="text-base font-normal text-faint">
-          ({results.length.toLocaleString("tr")} sonuç)
-        </span>
+        Yurt seç{" "}
+        {hasFilter && (
+          <span className="text-base font-normal text-faint">
+            ({results.length.toLocaleString("tr")} sonuç)
+          </span>
+        )}
       </h1>
 
       {/* ARAMA + ŞEHİR + SIRALA */}
@@ -102,33 +105,18 @@ export function YurtlarExplorer({ initialQuery = "" }: { initialQuery?: string }
         })}
       </div>
 
-      {/* IŞIK FİLTRESİ */}
-      <div className="mb-7 flex flex-wrap items-center gap-2">
-        <span className="text-[12.5px] text-faint">Işığa göre:</span>
-        {([...LIGHT_ORDER.filter((k) => k !== "gray"), "gray"] as LightKey[]).map((key) => {
-          const l = LIGHTS[key];
-          const on = light === key;
-          return (
-            <button
-              key={key}
-              onClick={() => { setLight(on ? null : key); resetPage(); }}
-              aria-pressed={on}
-              className="inline-flex items-center gap-[7px] rounded-pill border-2 px-3.5 py-[7px] text-[12.5px] font-semibold transition-all"
-              style={{
-                background: on ? l.badgeBg : "#fff",
-                borderColor: on ? l.dot : "#F5F0EB",
-                color: on ? l.badgeFg : "#78716C",
-              }}
-            >
-              <span className="h-2 w-2 rounded-full" style={{ background: l.dot }} />
-              {l.label}
-            </button>
-          );
-        })}
-      </div>
-
       {/* SONUÇLAR */}
-      {paged.length > 0 ? (
+      {!hasFilter ? (
+        <div className="rounded-[22px] border-2 border-dashed border-primary/30 bg-surface px-12 py-16 text-center">
+          <div className="mb-3.5 text-[44px]">🔍</div>
+          <h2 className="mb-2.5 text-2xl font-bold text-ink">
+            Yurt adı veya şehir seç
+          </h2>
+          <p className="mx-auto max-w-[400px] text-[15px] leading-relaxed text-muted">
+            Değerlendirmek istediğin yurdu bulmak için yukarıdan bir şehir seç ya da yurt adını yaz.
+          </p>
+        </div>
+      ) : paged.length > 0 ? (
         <>
           <div className="grid gap-3">
             {paged.map((c) => {
@@ -136,7 +124,7 @@ export function YurtlarExplorer({ initialQuery = "" }: { initialQuery?: string }
               return (
                 <Link
                   key={c.id}
-                  href={`/yurt/${c.id}`}
+                  href={`/anket?dorm=${c.id}`}
                   className="grid grid-cols-[56px_1.4fr_1fr_auto] items-center gap-5 rounded-card border border-line bg-card px-6 py-[18px] text-inherit transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-hover max-md:grid-cols-[52px_1fr] max-md:gap-3"
                 >
                   <div
@@ -194,7 +182,7 @@ export function YurtlarExplorer({ initialQuery = "" }: { initialQuery?: string }
         <div className="rounded-[22px] border-2 border-dashed border-primary/30 bg-surface px-12 py-16 text-center">
           <div className="mb-3.5 text-[44px]">🔦</div>
           <h2 className="mb-2.5 text-2xl font-bold text-ink">
-            &ldquo;{query.trim() || "bu filtre"}&rdquo; için dosya yok
+            &ldquo;{query.trim() || "bu filtre"}&rdquo; için sonuç yok
           </h2>
           <p className="mx-auto mb-6 max-w-[400px] text-[15px] leading-relaxed text-muted">
             Ya kimse eklememiş ya da herkes çok mutlu(!). İlk ekleyen sen ol,

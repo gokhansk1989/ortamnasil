@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { DormSelector } from "@/components/DormSelector";
 import { QUESTIONS, RESULT_BLURB } from "@/lib/survey";
@@ -41,9 +41,26 @@ const RELATIONS = [
 ];
 
 function AnketContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedId = searchParams.get("dorm") || "";
   const preselectedDorm = preselectedId ? getDorm(preselectedId) : undefined;
+
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/ben")
+      .then((r) => {
+        if (!r.ok) {
+          router.replace("/giris?donuş=/anket");
+        } else {
+          setAuthed(true);
+        }
+      })
+      .catch(() => router.replace("/giris?donuş=/anket"))
+      .finally(() => setAuthChecked(true));
+  }, [router]);
 
   const [selectedDorm, setSelectedDorm] = useState<Dorm | undefined>(preselectedDorm);
   const dormId = selectedDorm?.id || "";
@@ -84,6 +101,17 @@ function AnketContent() {
       : itirafCharCount < 40
         ? `Biraz daha detay: ${40 - itirafCharCount} karakter kaldı.`
         : "Güzel gidiyor.";
+
+  if (!authChecked || !authed) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper">
+        <div className="text-center">
+          <div className="mb-3 text-2xl animate-pulse">🔐</div>
+          <p className="text-faint text-sm">Giriş kontrol ediliyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">

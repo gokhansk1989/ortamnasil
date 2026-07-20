@@ -5,6 +5,11 @@ import { TrafficScale } from "@/components/TrafficScale";
 import { HeroSearch } from "@/components/HeroSearch";
 import { WeeklyDorms } from "@/components/WeeklyDorms";
 import { LogoFull } from "@/components/Logo";
+import { TypewriterHero } from "@/components/TypewriterHero";
+import { EmojiRain } from "@/components/EmojiRain";
+import { MarqueeTicker } from "@/components/MarqueeTicker";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { StaggerCards } from "@/components/StaggerCards";
 import { ticker, stats } from "@/lib/data";
 
 const steps = [
@@ -37,11 +42,7 @@ export default function HomePage() {
 
       {/* HERO */}
       <section className="relative overflow-hidden px-16 pb-16 pt-14 text-center max-md:px-5">
-        {/* Background decorations */}
-        <div className="pointer-events-none absolute -top-[80px] left-1/2 h-[500px] w-[900px] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(255,45,120,.08),transparent_55%)]" />
-        <div className="pointer-events-none absolute right-[10%] top-[20%] text-4xl opacity-20 animate-float">💬</div>
-        <div className="pointer-events-none absolute left-[8%] top-[30%] text-3xl opacity-15 animate-wiggle">⚡</div>
-        <div className="pointer-events-none absolute right-[20%] top-[60%] text-2xl opacity-15 animate-float" style={{ animationDelay: "1s" }}>👀</div>
+        <EmojiRain />
 
         <div className="relative">
           <div className="mb-6 flex justify-center">
@@ -55,7 +56,7 @@ export default function HomePage() {
 
           <h1 className="mb-4 text-[52px] font-bold leading-[1.08] tracking-[-1.5px] text-ink max-md:text-[36px]">
             Yurt nasıl,{" "}
-            <span className="gradient-text">içerden öğren.</span>
+            <TypewriterHero />
           </h1>
           <p className="mx-auto mb-9 max-w-[520px] text-lg leading-relaxed text-muted">
             Kaydolmadan önce sormaya çekindiklerin — yemek, internet, giriş saati —
@@ -84,21 +85,7 @@ export default function HomePage() {
               CANLI — SON İTİRAFLAR
             </span>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-1">
-            {ticker.map((t, i) => (
-              <div
-                key={i}
-                className="flex flex-shrink-0 items-center gap-2.5 whitespace-nowrap rounded-pill border border-line bg-card px-[18px] py-2.5 text-[13.5px] text-muted transition-all hover:border-primary/30 hover:shadow-sm"
-              >
-                <span
-                  className="h-2 w-2 rounded-full"
-                  style={{ background: t.dot }}
-                />
-                <span className="font-mono text-ink">{t.who}</span>
-                <span>{t.what}</span>
-              </div>
-            ))}
-          </div>
+          <MarqueeTicker items={ticker} />
         </div>
       </section>
 
@@ -120,16 +107,11 @@ export default function HomePage() {
         {stats.map((s, i) => (
           <div key={i} className="flex items-stretch gap-16 max-md:gap-8">
             {i > 0 && <div className="w-px bg-line max-md:hidden" />}
-            <div>
-              <div
-                className={`text-[34px] font-bold ${
-                  s.highlight ? "text-primary" : "text-ink"
-                }`}
-              >
-                {s.value}
-              </div>
-              <div className="text-sm text-faint">{s.label}</div>
-            </div>
+            <AnimatedCounter
+              value={s.value}
+              label={s.label}
+              highlight={s.highlight}
+            />
           </div>
         ))}
       </section>
@@ -145,22 +127,7 @@ export default function HomePage() {
           <p className="mb-10 text-center text-muted">
             Gayet basit, 3 adım. Toplam 3 dakika. ⏱️
           </p>
-          <div className="grid grid-cols-3 gap-5 max-md:grid-cols-1">
-            {steps.map((s) => (
-              <div key={s.tag} className="rounded-card border border-line bg-card p-7 shadow-lg transition-transform hover:scale-[1.02]">
-                <div className="mb-3 text-3xl">{s.emoji}</div>
-                <div className="mb-1 font-mono text-[12px] font-medium text-primary">
-                  {s.tag}
-                </div>
-                <div className="mb-2 text-lg font-semibold text-ink">
-                  {s.title}
-                </div>
-                <p className="text-[14.5px] leading-relaxed text-muted">
-                  {s.body}
-                </p>
-              </div>
-            ))}
-          </div>
+          <StaggerCards steps={steps} />
         </div>
       </section>
 

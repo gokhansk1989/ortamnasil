@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { DormSelector } from "@/components/DormSelector";
 import { getDorm, type Dorm } from "@/lib/dorms";
@@ -34,9 +34,26 @@ export default function ItirafYazPage() {
 }
 
 function ItirafYazContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedId = searchParams.get("dorm") || "";
   const preselectedDorm = preselectedId ? getDorm(preselectedId) : undefined;
+
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/ben")
+      .then((r) => {
+        if (!r.ok) {
+          router.replace("/giris?donuş=/itiraf-yaz");
+        } else {
+          setAuthed(true);
+        }
+      })
+      .catch(() => router.replace("/giris?donuş=/itiraf-yaz"))
+      .finally(() => setAuthChecked(true));
+  }, [router]);
 
   const [selectedDorm, setSelectedDorm] = useState<Dorm | undefined>(preselectedDorm);
   const dormId = selectedDorm?.id || "";
@@ -57,6 +74,17 @@ function ItirafYazContent() {
       : n < 40
         ? `Biraz daha detay: ${40 - n} karakter kaldı.`
         : "Güzel gidiyor. ✓";
+
+  if (!authChecked || !authed) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper">
+        <div className="text-center">
+          <div className="mb-3 text-2xl animate-pulse">🔐</div>
+          <p className="text-faint text-sm">Giriş kontrol ediliyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-paper">

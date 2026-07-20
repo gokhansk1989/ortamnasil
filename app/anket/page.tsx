@@ -16,12 +16,30 @@ export default function AnketPage() {
   );
 }
 
+function buildPeriods(): string[] {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const currentAcadYear = m >= 8 ? y : y - 1;
+  const periods: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    const start = currentAcadYear - i;
+    periods.push(`${start}-${start + 1} Güz`);
+    periods.push(`${start}-${start + 1} Bahar`);
+  }
+  return periods;
+}
+
+const PERIODS = buildPeriods();
+
 function AnketContent() {
   const searchParams = useSearchParams();
   const dormId = searchParams.get("dorm") || "kyk-ataturk-yurdu";
   const dorm = getDorm(dormId);
   const dormName = dorm?.name || "Yurt";
 
+  const [period, setPeriod] = useState("");
+  const [periodSelected, setPeriodSelected] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const done = step >= QUESTIONS.length;
@@ -49,7 +67,43 @@ function AnketContent() {
 
       <div className="flex flex-1 items-center justify-center px-8 py-12 max-md:px-5">
         <div className="w-[720px] max-w-full">
-          {!done ? (
+          {!periodSelected ? (
+            <div className="animate-pop rounded-[22px] border border-line bg-card px-12 py-11 shadow-lg max-md:px-6">
+              <div className="mb-2.5 font-mono text-[12.5px] font-bold tracking-wider text-primary">
+                {dormName.toLocaleUpperCase("tr")} DEĞERLENDİRMESİ
+              </div>
+              <h1 className="mb-2 text-[28px] font-bold leading-tight tracking-[-.3px] text-ink">
+                Hangi dönem kaldın?
+              </h1>
+              <p className="mb-6 text-[15px] text-faint">
+                Yorumun güncelliğini anlamak için kaldığın dönemi seç.
+              </p>
+              <div className="grid grid-cols-2 gap-2.5 max-md:grid-cols-1">
+                {PERIODS.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPeriod(p)}
+                    className="rounded-xl border-2 px-4 py-3 text-left text-[15px] font-medium transition-all"
+                    style={{
+                      borderColor: period === p ? "#F97316" : "#F5F0EB",
+                      background: period === p ? "#FFF7ED" : "white",
+                      color: period === p ? "#EA580C" : "#1C1917",
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setPeriodSelected(true)}
+                disabled={!period}
+                className="mt-6 w-full rounded-xl py-3.5 text-[15px] font-bold text-white transition-all disabled:opacity-40"
+                style={{ background: period ? "#F97316" : "#D6D3D1" }}
+              >
+                Devam et →
+              </button>
+            </div>
+          ) : !done ? (
             <>
               <div className="mb-7 text-center">
                 <div className="mb-2.5 font-mono text-[12.5px] font-bold tracking-wider text-primary">
@@ -151,6 +205,8 @@ function AnketContent() {
                     onClick={() => {
                       setStep(0);
                       setAnswers([]);
+                      setPeriod("");
+                      setPeriodSelected(false);
                     }}
                     className="rounded-2xl bg-white/10 px-[26px] py-3.5 text-[15px] font-semibold text-white"
                   >

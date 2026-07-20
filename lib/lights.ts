@@ -7,7 +7,7 @@ export type LightKey = "green" | "yellow" | "orange" | "red" | "gray";
 
 export interface Light {
   key: LightKey;
-  /** Rozet / kart etiketi ("Kapağı at" vb.) */
+  /** Rozet / kart etiketi ("Tavsiye edilir" vb.) */
   label: string;
   /** Skalada geçen kısa espri alt yazısı */
   sub: string;
@@ -25,8 +25,8 @@ export interface Light {
 export const LIGHTS: Record<LightKey, Light> = {
   green: {
     key: "green",
-    label: "Kapağı at",
-    sub: "Hemen, koşarak",
+    label: "Tavsiye edilir",
+    sub: "Gözün kapalı git",
     dot: "#2eb586",
     dotBright: "#3ee6a8",
     badgeBg: "#e7f6ef",
@@ -34,8 +34,8 @@ export const LIGHTS: Record<LightKey, Light> = {
   },
   yellow: {
     key: "yellow",
-    label: "Para için değer",
-    sub: "Duygular hariç",
+    label: "Ortalama",
+    sub: "Ne iyi ne kötü",
     dot: "#e8b93c",
     dotBright: "#f0c554",
     badgeBg: "#fbf1db",
@@ -43,8 +43,8 @@ export const LIGHTS: Record<LightKey, Light> = {
   },
   orange: {
     key: "orange",
-    label: "Girmeden düşün",
-    sub: "İki kere hem de",
+    label: "Dikkatli ol",
+    sub: "Eksikler var",
     dot: "#eb8a4a",
     dotBright: "#eb8a4a",
     badgeBg: "#fdeadd",
@@ -52,8 +52,8 @@ export const LIGHTS: Record<LightKey, Light> = {
   },
   red: {
     key: "red",
-    label: "Kaçarak uzaklaş",
-    sub: "Arkana bakma",
+    label: "Uzak dur",
+    sub: "Ciddi sorunlar var",
     dot: "#e05d4b",
     dotBright: "#f4674f",
     badgeBg: "#fbe7e3",
@@ -61,8 +61,8 @@ export const LIGHTS: Record<LightKey, Light> = {
   },
   gray: {
     key: "gray",
-    label: "Yeterli veri yok",
-    sub: "İçeride casusumuz yok",
+    label: "Gizemli",
+    sub: "Kimse konuşmadı henüz",
     dot: "#7a8a86",
     dotBright: "#7a8a86",
     badgeBg: "#eef1f0",

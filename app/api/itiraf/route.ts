@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { dormId, title, text, relation } = await req.json();
+    const { dormId, title, text, relation, period } = await req.json();
 
     if (!dormId || !title || !text || !relation) {
       return NextResponse.json({ error: "Tüm alanlar gerekli" }, { status: 400 });
@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
         text,
         relation: relation as Relation,
         light: survey?.light || ("GRAY" as Light),
+        period: typeof period === "string" ? period : null,
       },
     });
 

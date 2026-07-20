@@ -143,6 +143,7 @@ model Survey {
   answers   Int[] // 9 cevap: 1 = A, 0 = B, pas kaydedilmez (dizi kısalır)
   ratio     Float? // ratioOf(answers); pas-only ise null
   light     Light // scoreSurvey(answers)
+  period    String? // "2024-2025 Güz", "2023-2024 Bahar" vb.
   createdAt DateTime @default(now())
 
   dorm Dorm @relation(fields: [dormId], references: [id], onDelete: Cascade)
@@ -160,6 +161,7 @@ model Review {
   title        String
   text         String // 40–600 karakter; sınır API'de doğrulanır
   relation     Relation
+  period       String? // "2024-2025 Güz" vb.
   light        Light // anketten taşınan ışık
   helpfulCount Int              @default(0)
   sameCount    Int              @default(0)

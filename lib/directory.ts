@@ -123,10 +123,10 @@ function generateProfile(d: Dorm): DormProfile {
       { name: "Yönetim", w: "64%", light: "yellow", verdict: "Bürokratik ama çözer" },
     ],
     distribution: [
-      { name: "Kapağı at", dot: "#2eb586", w: "62%", count: Math.round(d.reviewCount * 0.62) },
-      { name: "Para için değer", dot: "#e8b93c", w: "21%", count: Math.round(d.reviewCount * 0.21) },
-      { name: "Girmeden düşün", dot: "#eb8a4a", w: "10%", count: Math.round(d.reviewCount * 0.1) },
-      { name: "Kaçarak uzaklaş", dot: "#e05d4b", w: "5%", count: Math.round(d.reviewCount * 0.05) },
+      { name: "Tavsiye edilir", dot: "#2eb586", w: "62%", count: Math.round(d.reviewCount * 0.62) },
+      { name: "Ortalama", dot: "#e8b93c", w: "21%", count: Math.round(d.reviewCount * 0.21) },
+      { name: "Dikkatli ol", dot: "#eb8a4a", w: "10%", count: Math.round(d.reviewCount * 0.1) },
+      { name: "Uzak dur", dot: "#e05d4b", w: "5%", count: Math.round(d.reviewCount * 0.05) },
       { name: "Pas geçti", dot: "#b9c9c4", w: "2%", count: Math.round(d.reviewCount * 0.02) },
     ],
     quickFacts: [

@@ -82,6 +82,6 @@ export const sectors = ["Tümü", "KYK", "Özel"];
 export const stats = [
   { value: STATS.totalDorms.toLocaleString("tr"), label: "yurt dosyalandı" },
   { value: "8.917", label: "anonim itiraf" },
-  { value: "312", label: "\"kaçarak uzaklaş\" verildi" },
+  { value: "312", label: "\"uzak dur\" verildi" },
   { value: "0", label: "gerçek isim sızdırıldı", highlight: true },
 ];

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { dormId, answers } = await req.json();
+    const { dormId, answers, period } = await req.json();
 
     if (!dormId || !Array.isArray(answers)) {
       return NextResponse.json({ error: "dormId ve answers gerekli" }, { status: 400 });
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
         answers: counted,
         ratio,
         light: toLightEnum(light),
+        period: typeof period === "string" ? period : null,
       },
     });
 

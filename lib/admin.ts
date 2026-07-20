@@ -46,9 +46,9 @@ export const KPIS = [
 ];
 
 export const PLATFORM_DIST = [
-  { name: "🟢 Kapağı at", pct: "%34", w: "34%", color: "#2eb586" },
-  { name: "🟡 Para için değer", pct: "%27", w: "27%", color: "#e8b93c" },
-  { name: "🟠 Girmeden düşün", pct: "%14", w: "14%", color: "#eb8a4a" },
-  { name: "🔴 Kaçarak uzaklaş", pct: "%17", w: "17%", color: "#e05d4b" },
+  { name: "🟢 Tavsiye edilir", pct: "%34", w: "34%", color: "#2eb586" },
+  { name: "🟡 Ortalama", pct: "%27", w: "27%", color: "#e8b93c" },
+  { name: "🟠 Dikkatli ol", pct: "%14", w: "14%", color: "#eb8a4a" },
+  { name: "🔴 Uzak dur", pct: "%17", w: "17%", color: "#e05d4b" },
   { name: "⚪ Veri yok", pct: "%8", w: "8%", color: "#5a6a66" },
 ];

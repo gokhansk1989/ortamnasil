@@ -8,6 +8,22 @@ import { getDorm } from "@/lib/dorms";
 
 const RELATIONS = ["Şu an kalıyorum", "Eskiden kaldım", "Kısa süre kaldım", "Gezip gördüm"];
 
+function buildPeriods(): string[] {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const currentAcadYear = m >= 8 ? y : y - 1;
+  const periods: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    const start = currentAcadYear - i;
+    periods.push(`${start}-${start + 1} Güz`);
+    periods.push(`${start}-${start + 1} Bahar`);
+  }
+  return periods;
+}
+
+const PERIODS = buildPeriods();
+
 export default function ItirafYazPage() {
   return (
     <Suspense>
@@ -24,6 +40,7 @@ function ItirafYazContent() {
   const dormInitial = dormName.charAt(0).toLocaleUpperCase("tr");
 
   const [relation, setRelation] = useState(RELATIONS[0]);
+  const [period, setPeriod] = useState("");
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -71,7 +88,7 @@ function ItirafYazContent() {
                 <div className="flex-1">
                   <div className="font-semibold text-ink">{dormName}</div>
                   <div className="text-[12.5px] text-faint">
-                    Senin ışığın: <strong className="text-light-green">Kapağı at</strong>{" "}
+                    Senin ışığın: <strong className="text-light-green">Tavsiye edilir</strong>{" "}
                     (anketten geldi)
                   </div>
                 </div>
@@ -104,6 +121,21 @@ function ItirafYazContent() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Dönem */}
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-ink">Hangi dönem kaldın?</label>
+                <select
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
+                  className="w-full rounded-xl border-2 border-line bg-card px-3.5 py-3.5 text-[15px] text-ink outline-none transition-colors focus:border-primary/40"
+                >
+                  <option value="">Dönem seç...</option>
+                  {PERIODS.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Başlık */}

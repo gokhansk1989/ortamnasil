@@ -30,7 +30,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-grotesk)", "sans-serif"],
+        sans: ["var(--font-outfit)", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       borderRadius: { card: "18px", pill: "999px" },

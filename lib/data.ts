@@ -73,7 +73,7 @@ export const dorms: DormCardData[] = featured.map(dormToCard);
 export const ticker: TickerItem[] = [
   { dot: "#2eb586", who: "SabırlıAhtapot", what: "bir KYK yurduna yeşil ışık yaktı" },
   { dot: "#e05d4b", who: "KaçakÇaycı", what: "bir özel yurda kırmızı ışık yaktı" },
-  { dot: "#7a8a86", who: "GizliVizyoner", what: "yeni yurt ekledi 🎀" },
+  { dot: "#7a8a86", who: "GizliVizyoner", what: "yeni yurt ekledi ✂️" },
   { dot: "#e8b93c", who: "YorgunUnicorn", what: "'yemekhaneye dua ederek gir' dedi" },
 ];
 

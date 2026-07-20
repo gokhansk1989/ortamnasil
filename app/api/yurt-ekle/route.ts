@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       id: dorm.id,
       recordNo: dorm.recordNo,
-      message: "Yurt eklendi, kurdeleyi kestin! 🎀",
+      message: "Yurt eklendi, kurdeleyi kestin! ✂️",
     }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });

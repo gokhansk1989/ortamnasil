@@ -37,7 +37,7 @@ export default function DormPage({ params }: { params: { id: string } }) {
                   </span>
                 </div>
                 <div className="mt-2.5 font-mono text-[12.5px] text-faint">
-                  kayıt {c.recordNo} · KurdeleKesen: {c.creatorNick} 🎀
+                  kayıt {c.recordNo} · KurdeleKesen: {c.creatorNick} ✂️
                 </div>
               </div>
             </div>

@@ -28,7 +28,7 @@ export default function YurtEklePage() {
           <>
             <div className="mb-8 text-center">
               <div className="mb-4 inline-flex items-center gap-1.5 rounded-pill bg-primary/10 px-4 py-[6px] text-[12.5px] font-bold text-primary">
-                🎀 İLK EKLEYEN KURDELEYİ KESER
+                ✂️ İLK EKLEYEN KURDELEYİ KESER
               </div>
               <h1 className="mb-2.5 text-[36px] font-bold tracking-[-.5px] text-ink max-md:text-[28px]">
                 Haritaya yeni yurt ekle
@@ -113,7 +113,7 @@ export default function YurtEklePage() {
                 onClick={() => setSubmitted(true)}
                 className="gradient-pink rounded-xl py-4 text-base font-bold text-white shadow-glow transition-transform hover:scale-[1.02]"
               >
-                Yurdu ekle ve kurdeleyi kes 🎀
+                Yurdu ekle ve kurdeleyi kes ✂️
               </button>
               <p className="text-center text-[12.5px] text-faint2">
                 Ekledikten sonra ilk değerlendirme anketi otomatik açılır — dışarıdan
@@ -135,7 +135,7 @@ export default function YurtEklePage() {
                 {c.emoji}
               </span>
             ))}
-            <div className="mb-3 text-[48px]">🎀</div>
+            <div className="mb-3 text-[48px]">✂️</div>
             <div className="mb-3.5 font-mono text-xs tracking-widest text-primary-light">
               KAYIT #1205 AÇILDI
             </div>

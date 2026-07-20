@@ -198,7 +198,7 @@ export function YurtlarExplorer({ initialQuery = "" }: { initialQuery?: string }
           </h2>
           <p className="mx-auto mb-6 max-w-[400px] text-[15px] leading-relaxed text-muted">
             Ya kimse eklememiş ya da herkes çok mutlu(!). İlk ekleyen sen ol,
-            kurdeleyi sen kes. 🎀
+            kurdeleyi sen kes. ✂️
           </p>
           <Link
             href="/yurt-ekle"

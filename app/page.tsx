@@ -67,7 +67,7 @@ export default function HomePage() {
           <p className="mt-5 text-sm text-faint">
             Yurdun listede yok mu?{" "}
             <Link href="/yurt-ekle" className="font-semibold text-primary">
-              İlk ekleyen sen ol 🎀
+              İlk ekleyen sen ol ✂️
             </Link>
           </p>
         </div>
@@ -177,7 +177,7 @@ export default function HomePage() {
             <p className="max-w-[520px] text-[15.5px] leading-relaxed text-muted">
               Sen ekle, kurdeleyi sen kes. Karışıklık olmasın diye konum veya
               harita adresini de ekleyebilirsin — &ldquo;hangi Yıldız Yurdu?&rdquo; dramı
-              yaşamayalım. 🎀
+              yaşamayalım. ✂️
             </p>
           </div>
           <Link

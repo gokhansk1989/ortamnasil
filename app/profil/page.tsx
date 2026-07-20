@@ -41,7 +41,7 @@ export default function ProfilPage() {
             <h1 className="mb-2 text-[30px] font-bold tracking-[-.5px]">SinirliPenguen42</h1>
             <div className="flex flex-wrap gap-2 max-md:justify-center">
               <span className="rounded-pill bg-primary/20 px-3 py-[5px] text-[12.5px] font-semibold text-primary-light">
-                🎀 KurdeleKesen ×2
+                ✂️ KurdeleKesen ×2
               </span>
               <span className="rounded-pill bg-white/[.08] px-3 py-[5px] text-[12.5px] font-semibold text-onDarkMuted">
                 🕵️ Güvenilir Muhbir

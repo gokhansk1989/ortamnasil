@@ -4,9 +4,10 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Logo } from "@/components/Logo";
+import { DormSelector } from "@/components/DormSelector";
 import { QUESTIONS, RESULT_BLURB } from "@/lib/survey";
 import { LIGHTS, scoreSurvey, type Answer } from "@/lib/lights";
-import { getDorm } from "@/lib/dorms";
+import { getDorm, type Dorm } from "@/lib/dorms";
 
 export default function AnketPage() {
   return (
@@ -34,15 +35,21 @@ const PERIODS = buildPeriods();
 
 function AnketContent() {
   const searchParams = useSearchParams();
-  const dormId = searchParams.get("dorm") || "kyk-ataturk-yurdu";
-  const dorm = getDorm(dormId);
-  const dormName = dorm?.name || "Yurt";
+  const preselectedId = searchParams.get("dorm") || "";
+  const preselectedDorm = preselectedId ? getDorm(preselectedId) : undefined;
+
+  const [selectedDorm, setSelectedDorm] = useState<Dorm | undefined>(preselectedDorm);
+  const dormId = selectedDorm?.id || "";
+  const dormName = selectedDorm?.name || "Yurt";
 
   const [period, setPeriod] = useState("");
   const [periodSelected, setPeriodSelected] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const done = step >= QUESTIONS.length;
+  const [comment, setComment] = useState("");
+  const [commentDone, setCommentDone] = useState(false);
+  const questionsComplete = step >= QUESTIONS.length;
+  const done = questionsComplete && commentDone;
 
   function answer(val: Answer) {
     setAnswers((prev) => {
@@ -67,7 +74,22 @@ function AnketContent() {
 
       <div className="flex flex-1 items-center justify-center px-8 py-12 max-md:px-5">
         <div className="w-[720px] max-w-full">
-          {!periodSelected ? (
+          {!dormId ? (
+            /* ── Yurt seçimi ── */
+            <div className="animate-pop rounded-[22px] border border-line bg-card px-12 py-11 shadow-lg max-md:px-6">
+              <div className="mb-2.5 font-mono text-[12.5px] font-bold tracking-wider text-primary">
+                YURT DEĞERLENDİRMESİ
+              </div>
+              <h1 className="mb-2 text-[28px] font-bold leading-tight tracking-[-.3px] text-ink">
+                Hangi yurdu değerlendireceksin?
+              </h1>
+              <p className="mb-6 text-[15px] text-faint">
+                Önce il ve ilçeni seç, sonra yurdunu bul.
+              </p>
+              <DormSelector onSelect={setSelectedDorm} />
+            </div>
+          ) : !periodSelected ? (
+            /* ── Dönem seçimi ── */
             <div className="animate-pop rounded-[22px] border border-line bg-card px-12 py-11 shadow-lg max-md:px-6">
               <div className="mb-2.5 font-mono text-[12.5px] font-bold tracking-wider text-primary">
                 {dormName.toLocaleUpperCase("tr")} DEĞERLENDİRMESİ
@@ -103,7 +125,8 @@ function AnketContent() {
                 Devam et →
               </button>
             </div>
-          ) : !done ? (
+          ) : !questionsComplete ? (
+            /* ── Sorular ── */
             <>
               <div className="mb-7 text-center">
                 <div className="mb-2.5 font-mono text-[12.5px] font-bold tracking-wider text-primary">
@@ -174,6 +197,54 @@ function AnketContent() {
                 olduğunu bilmez, biz dahil. 🤫
               </p>
             </>
+          ) : !commentDone ? (
+            /* ── Yorum (opsiyonel) ── */
+            <div className="animate-pop rounded-[22px] border border-line bg-card px-12 py-11 shadow-lg max-md:px-6">
+              <div className="mb-4 font-mono text-[12.5px] font-bold tracking-wider text-primary">
+                SON ADIM — İSTERSEN YORUM EKLE
+              </div>
+              <h1 className="mb-2 text-[28px] font-bold leading-tight tracking-[-.3px] text-ink">
+                Eklemek istediğin bir şey var mı?
+              </h1>
+              <p className="mb-6 text-[15px] text-faint">
+                Zorunlu değil ama yazarsan yurdu merak edenlere çok yardımcı olur. Küfür, isim ifşası ve kişisel bilgi yasak.
+              </p>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value.slice(0, 500))}
+                placeholder="Örn: Yemekhanede çeşit var ama lezzet kısmı şansa bağlı. İnternete 22:00'dan sonra güvenme..."
+                className="min-h-[120px] w-full resize-y rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15px] leading-relaxed text-ink outline-none transition-colors focus:border-primary/40"
+              />
+              <div className="mt-2 flex justify-between text-[12.5px]">
+                <span style={{ color: comment.length > 0 && comment.length < 15 ? "#eb8a4a" : "#A8A29E" }}>
+                  {comment.length === 0
+                    ? "Boş bırakabilirsin — zorunlu değil."
+                    : comment.length < 15
+                      ? `Biraz daha detay ver: ${15 - comment.length} karakter kaldı.`
+                      : "Güzel gidiyor. ✓"}
+                </span>
+                <span className="font-mono">{comment.length}/500</span>
+              </div>
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => { setComment(""); setCommentDone(true); }}
+                  className="flex-1 rounded-xl border-2 border-line py-3.5 text-[15px] font-semibold text-faint transition-all hover:border-primary/30"
+                >
+                  Atla, direkt gönder
+                </button>
+                <button
+                  onClick={() => {
+                    if (comment.length > 0 && comment.length < 15) return;
+                    setCommentDone(true);
+                  }}
+                  disabled={comment.length > 0 && comment.length < 15}
+                  className="flex-1 rounded-xl py-3.5 text-[15px] font-bold text-white transition-all disabled:opacity-40"
+                  style={{ background: comment.length > 0 && comment.length < 15 ? "#D6D3D1" : "#F97316" }}
+                >
+                  {comment.length > 0 ? "Yorumla gönder" : "Gönder"}
+                </button>
+              </div>
+            </div>
           ) : (
             <>
               <div className="animate-pop rounded-[22px] bg-ink px-12 py-[52px] text-center text-white max-md:px-6">
@@ -205,8 +276,11 @@ function AnketContent() {
                     onClick={() => {
                       setStep(0);
                       setAnswers([]);
+                      setComment("");
+                      setCommentDone(false);
                       setPeriod("");
                       setPeriodSelected(false);
+                      if (!preselectedId) setSelectedDorm(undefined);
                     }}
                     className="rounded-2xl bg-white/10 px-[26px] py-3.5 text-[15px] font-semibold text-white"
                   >

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Logo } from "@/components/Logo";
-import { getDorm } from "@/lib/dorms";
+import { DormSelector } from "@/components/DormSelector";
+import { getDorm, type Dorm } from "@/lib/dorms";
 
 const RELATIONS = ["Şu an kalıyorum", "Eskiden kaldım", "Kısa süre kaldım", "Gezip gördüm"];
 
@@ -34,10 +35,13 @@ export default function ItirafYazPage() {
 
 function ItirafYazContent() {
   const searchParams = useSearchParams();
-  const dormId = searchParams.get("dorm") || "kyk-ataturk-yurdu";
-  const dorm = getDorm(dormId);
-  const dormName = dorm?.name || "Yurt";
-  const dormInitial = dormName.charAt(0).toLocaleUpperCase("tr");
+  const preselectedId = searchParams.get("dorm") || "";
+  const preselectedDorm = preselectedId ? getDorm(preselectedId) : undefined;
+
+  const [selectedDorm, setSelectedDorm] = useState<Dorm | undefined>(preselectedDorm);
+  const dormId = selectedDorm?.id || "";
+  const dormName = selectedDorm?.name || "";
+  const dormInitial = dormName ? dormName.charAt(0).toLocaleUpperCase("tr") : "?";
 
   const [relation, setRelation] = useState(RELATIONS[0]);
   const [period, setPeriod] = useState("");
@@ -46,7 +50,7 @@ function ItirafYazContent() {
   const [submitted, setSubmitted] = useState(false);
 
   const n = text.length;
-  const valid = n >= 40 && title.trim().length > 0;
+  const valid = n >= 40 && title.trim().length > 0 && !!dormId;
   const hint =
     n === 0
       ? "En az 40 karakter — tek kelime 'kötü' sayılmaz."
@@ -68,7 +72,12 @@ function ItirafYazContent() {
           <>
             <div className="mb-7">
               <div className="mb-4 text-[13.5px] text-faint">
-                <Link href={`/yurt/${dormId}`}>← {dormName}</Link> profiline dön
+                {dormId ? (
+                  <Link href={`/yurt/${dormId}`}>← {dormName}</Link>
+                ) : (
+                  <Link href="/yurtlar">← Yurtlar</Link>
+                )}{" "}
+                profiline dön
               </div>
               <h1 className="mb-2.5 text-[32px] font-bold tracking-[-.5px] text-ink">
                 İtirafını yaz ✍️
@@ -80,113 +89,127 @@ function ItirafYazContent() {
             </div>
 
             <div className="grid gap-[22px] rounded-[22px] border border-line bg-card px-9 py-8 shadow-lg max-md:px-6">
-              {/* Yurt özeti */}
-              <div className="flex items-center gap-3.5 rounded-2xl bg-surface px-[18px] py-3.5">
-                <div className="gradient-pink grid h-11 w-11 place-items-center rounded-xl text-lg font-bold text-white">
-                  {dormInitial}
+              {/* Yurt seçimi */}
+              {!preselectedId ? (
+                <div>
+                  <div className="mb-3 text-sm font-semibold text-ink">Hangi yurt?</div>
+                  <DormSelector
+                    onSelect={setSelectedDorm}
+                    selected={dormId}
+                  />
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-ink">{dormName}</div>
-                  <div className="text-[12.5px] text-faint">
-                    Senin ışığın: <strong className="text-light-green">Tavsiye edilir</strong>{" "}
-                    (anketten geldi)
+              ) : (
+                <div className="flex items-center gap-3.5 rounded-2xl bg-surface px-[18px] py-3.5">
+                  <div className="gradient-pink grid h-11 w-11 place-items-center rounded-xl text-lg font-bold text-white">
+                    {dormInitial}
                   </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-ink">{dormName}</div>
+                    <div className="text-[12.5px] text-faint">
+                      Senin ışığın: <strong className="text-light-green">Tavsiye edilir</strong>{" "}
+                      (anketten geldi)
+                    </div>
+                  </div>
+                  <Link href={`/anket?dorm=${dormId}`} className="text-[13px] font-semibold text-primary">
+                    Değiştir
+                  </Link>
                 </div>
-                <Link href={`/anket?dorm=${dormId}`} className="text-[13px] font-semibold text-primary">
-                  Değiştir
-                </Link>
-              </div>
+              )}
 
-              {/* İlişki */}
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-ink">İlişkin ne?</label>
-                <div className="flex flex-wrap gap-2">
-                  {RELATIONS.map((r) => {
-                    const on = r === relation;
-                    return (
-                      <button
-                        key={r}
-                        onClick={() => setRelation(r)}
-                        aria-pressed={on}
-                        className="rounded-pill border-2 px-4 py-[9px] text-[13.5px] transition-all"
-                        style={{
-                          fontWeight: on ? 600 : 400,
-                          background: on ? "linear-gradient(135deg, #F97316, #EA580C)" : "#fff",
-                          borderColor: on ? "transparent" : "#E7E0DA",
-                          color: on ? "#fff" : "#44403C",
-                        }}
-                      >
-                        {r}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {dormId && (
+                <>
+                  {/* İlişki */}
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-ink">İlişkin ne?</label>
+                    <div className="flex flex-wrap gap-2">
+                      {RELATIONS.map((r) => {
+                        const on = r === relation;
+                        return (
+                          <button
+                            key={r}
+                            onClick={() => setRelation(r)}
+                            aria-pressed={on}
+                            className="rounded-pill border-2 px-4 py-[9px] text-[13.5px] transition-all"
+                            style={{
+                              fontWeight: on ? 600 : 400,
+                              background: on ? "linear-gradient(135deg, #F97316, #EA580C)" : "#fff",
+                              borderColor: on ? "transparent" : "#E7E0DA",
+                              color: on ? "#fff" : "#44403C",
+                            }}
+                          >
+                            {r}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-              {/* Dönem */}
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-ink">Hangi dönem kaldın?</label>
-                <select
-                  value={period}
-                  onChange={(e) => setPeriod(e.target.value)}
-                  className="w-full rounded-xl border-2 border-line bg-card px-3.5 py-3.5 text-[15px] text-ink outline-none transition-colors focus:border-primary/40"
-                >
-                  <option value="">Dönem seç...</option>
-                  {PERIODS.map((p) => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
+                  {/* Dönem */}
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-ink">Hangi dönem kaldın?</label>
+                    <select
+                      value={period}
+                      onChange={(e) => setPeriod(e.target.value)}
+                      className="w-full rounded-xl border-2 border-line bg-card px-3.5 py-3.5 text-[15px] text-ink outline-none transition-colors focus:border-primary/40"
+                    >
+                      <option value="">Dönem seç...</option>
+                      {PERIODS.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Başlık */}
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-ink">
-                  Başlık <span className="font-normal text-faint">(tek cümlelik özet)</span>
-                </label>
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="örn. Mesai bitince gerçekten bitiyor"
-                  className="w-full rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15.5px] text-ink outline-none transition-colors focus:border-primary/40"
-                />
-              </div>
+                  {/* Başlık */}
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-ink">
+                      Başlık <span className="font-normal text-faint">(tek cümlelik özet)</span>
+                    </label>
+                    <input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="örn. Yemekhane efsane ama internet yok"
+                      className="w-full rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15.5px] text-ink outline-none transition-colors focus:border-primary/40"
+                    />
+                  </div>
 
-              {/* İtiraf */}
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-ink">İtirafın</label>
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value.slice(0, 600))}
-                  placeholder="İyi yanı, kötü yanı, 'keşke bilseydim' dediğin şey... Kurumsal ağız yasak, insan gibi anlat."
-                  className="min-h-[140px] w-full resize-y rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15px] leading-relaxed text-ink outline-none transition-colors focus:border-primary/40"
-                />
-                <div
-                  className="mt-2 flex justify-between text-[12.5px]"
-                  style={{ color: n > 0 && n < 40 ? "#eb8a4a" : "#A8A29E" }}
-                >
-                  <span>{hint}</span>
-                  <span className="font-mono">{n}/600</span>
-                </div>
-              </div>
+                  {/* İtiraf */}
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-ink">İtirafın</label>
+                    <textarea
+                      value={text}
+                      onChange={(e) => setText(e.target.value.slice(0, 600))}
+                      placeholder="İyi yanı, kötü yanı, 'keşke bilseydim' dediğin şey... Kurumsal ağız yasak, insan gibi anlat."
+                      className="min-h-[140px] w-full resize-y rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15px] leading-relaxed text-ink outline-none transition-colors focus:border-primary/40"
+                    />
+                    <div
+                      className="mt-2 flex justify-between text-[12.5px]"
+                      style={{ color: n > 0 && n < 40 ? "#eb8a4a" : "#A8A29E" }}
+                    >
+                      <span>{hint}</span>
+                      <span className="font-mono">{n}/600</span>
+                    </div>
+                  </div>
 
-              <div className="rounded-xl bg-surface2 px-[18px] py-3.5 text-[13px] leading-relaxed text-teal">
-                ⚖️ <strong>Kısa hukuk köşesi:</strong> İsim verme, küfür etme, sır ifşa
-                etme. &ldquo;Müdür kötü&rdquo; değil &ldquo;toplantıda söz kesiliyor&rdquo; yaz — hem daha
-                faydalı hem dava riski yok.
-              </div>
+                  <div className="rounded-xl bg-surface2 px-[18px] py-3.5 text-[13px] leading-relaxed text-teal">
+                    ⚖️ <strong>Kısa hukuk köşesi:</strong> İsim verme, küfür etme, sır ifşa
+                    etme. &ldquo;Müdür kötü&rdquo; değil &ldquo;toplantıda söz kesiliyor&rdquo; yaz — hem daha
+                    faydalı hem dava riski yok.
+                  </div>
 
-              <button
-                onClick={() => valid && setSubmitted(true)}
-                disabled={!valid}
-                className="rounded-xl py-4 text-base font-bold text-white transition-all"
-                style={{
-                  background: valid ? "linear-gradient(135deg, #F97316, #EA580C)" : "#E7E0DA",
-                  cursor: valid ? "pointer" : "not-allowed",
-                  boxShadow: valid ? "0 0 30px rgba(249,115,22,.20)" : "none",
-                }}
-              >
-                Anonim yayınla 📮
-              </button>
+                  <button
+                    onClick={() => valid && setSubmitted(true)}
+                    disabled={!valid}
+                    className="rounded-xl py-4 text-base font-bold text-white transition-all"
+                    style={{
+                      background: valid ? "linear-gradient(135deg, #F97316, #EA580C)" : "#E7E0DA",
+                      cursor: valid ? "pointer" : "not-allowed",
+                      boxShadow: valid ? "0 0 30px rgba(249,115,22,.20)" : "none",
+                    }}
+                  >
+                    Anonim yayınla 📮
+                  </button>
+                </>
+              )}
             </div>
           </>
         ) : (

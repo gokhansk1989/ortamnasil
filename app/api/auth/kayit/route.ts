@@ -50,11 +50,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       id: user.id,
       nick: user.nick,
       message: "Kayıt başarılı",
     }, { status: 201 });
+
+    res.cookies.set("session", user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
+    });
+
+    return res;
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }

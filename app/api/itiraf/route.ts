@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { moderateText } from "@/lib/moderation";
 import type { Light, Relation } from "@prisma/client";
 
 const VALID_RELATIONS: Relation[] = ["CURRENT_RESIDENT", "FORMER_RESIDENT", "SHORT_STAY", "VISITED"];
@@ -23,6 +24,15 @@ export async function POST(req: NextRequest) {
 
     if (text.length < 40 || text.length > 600) {
       return NextResponse.json({ error: "İtiraf 40-600 karakter olmalı" }, { status: 400 });
+    }
+
+    const titleMod = moderateText(title);
+    if (!titleMod.ok) {
+      return NextResponse.json({ error: `Başlık: ${titleMod.reason}` }, { status: 422 });
+    }
+    const textMod = moderateText(text);
+    if (!textMod.ok) {
+      return NextResponse.json({ error: textMod.reason }, { status: 422 });
     }
 
     if (!VALID_RELATIONS.includes(relation)) {

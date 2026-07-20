@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ratioOf, lightFromRatio, dormLight } from "@/lib/lights";
+import { moderateText } from "@/lib/moderation";
 import type { Answer } from "@/lib/lights";
 import type { Light } from "@prisma/client";
 
@@ -15,10 +16,23 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { dormId, answers, period } = await req.json();
+    const { dormId, answers, period, comment } = await req.json();
 
     if (!dormId || !Array.isArray(answers)) {
       return NextResponse.json({ error: "dormId ve answers gerekli" }, { status: 400 });
+    }
+
+    if (typeof comment === "string" && comment.trim().length > 0) {
+      if (comment.trim().length < 15) {
+        return NextResponse.json({ error: "Yorum en az 15 karakter olmalı" }, { status: 400 });
+      }
+      if (comment.length > 500) {
+        return NextResponse.json({ error: "Yorum en fazla 500 karakter olabilir" }, { status: 400 });
+      }
+      const mod = moderateText(comment);
+      if (!mod.ok) {
+        return NextResponse.json({ error: mod.reason }, { status: 422 });
+      }
     }
 
     const dorm = await prisma.dorm.findUnique({ where: { id: dormId } });
@@ -48,6 +62,7 @@ export async function POST(req: NextRequest) {
         ratio,
         light: toLightEnum(light),
         period: typeof period === "string" ? period : null,
+        comment: typeof comment === "string" && comment.trim().length >= 15 ? comment.trim() : null,
       },
     });
 

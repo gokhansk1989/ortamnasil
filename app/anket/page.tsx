@@ -33,6 +33,13 @@ function buildPeriods(): string[] {
 
 const PERIODS = buildPeriods();
 
+const RELATIONS = [
+  { label: "Şu an kalıyorum", value: "CURRENT_RESIDENT" },
+  { label: "Eskiden kaldım", value: "FORMER_RESIDENT" },
+  { label: "Kısa süre kaldım", value: "SHORT_STAY" },
+  { label: "Gezip gördüm", value: "VISITED" },
+];
+
 function AnketContent() {
   const searchParams = useSearchParams();
   const preselectedId = searchParams.get("dorm") || "";
@@ -48,8 +55,14 @@ function AnketContent() {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [comment, setComment] = useState("");
   const [commentDone, setCommentDone] = useState(false);
+
+  const [itirafTitle, setItirafTitle] = useState("");
+  const [itirafText, setItirafText] = useState("");
+  const [itirafRelation, setItirafRelation] = useState(RELATIONS[0].value);
+  const [itirafDone, setItirafDone] = useState(false);
+
   const questionsComplete = step >= QUESTIONS.length;
-  const done = questionsComplete && commentDone;
+  const done = questionsComplete && commentDone && itirafDone;
 
   function answer(val: Answer) {
     setAnswers((prev) => {
@@ -63,12 +76,21 @@ function AnketContent() {
   const q = QUESTIONS[done ? 0 : step];
   const light = LIGHTS[scoreSurvey(answers)];
 
+  const itirafCharCount = itirafText.length;
+  const itirafValid = itirafTitle.trim().length >= 5 && itirafCharCount >= 40;
+  const itirafHint =
+    itirafCharCount === 0
+      ? "En az 40 karakter — tek kelime 'kötü' sayılmaz."
+      : itirafCharCount < 40
+        ? `Biraz daha detay: ${40 - itirafCharCount} karakter kaldı.`
+        : "Güzel gidiyor.";
+
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       <header className="flex items-center justify-between border-b border-line bg-paper/90 px-16 py-4 backdrop-blur-md max-md:px-5">
         <Logo />
         <div className="font-mono text-[13px] text-faint max-md:hidden">
-          🥸 SinirliPenguen42 · kimliğin kasada 🔒
+          🥸 kimliğin kasada 🔒
         </div>
       </header>
 
@@ -201,7 +223,7 @@ function AnketContent() {
             /* ── Yorum (opsiyonel) ── */
             <div className="animate-pop rounded-[22px] border border-line bg-card px-12 py-11 shadow-lg max-md:px-6">
               <div className="mb-4 font-mono text-[12.5px] font-bold tracking-wider text-primary">
-                SON ADIM — İSTERSEN YORUM EKLE
+                ANKET TAMAMLANDI — YORUM EKLE
               </div>
               <h1 className="mb-2 text-[28px] font-bold leading-tight tracking-[-.3px] text-ink">
                 Eklemek istediğin bir şey var mı?
@@ -221,7 +243,7 @@ function AnketContent() {
                     ? "Boş bırakabilirsin — zorunlu değil."
                     : comment.length < 15
                       ? `Biraz daha detay ver: ${15 - comment.length} karakter kaldı.`
-                      : "Güzel gidiyor. ✓"}
+                      : "Güzel gidiyor."}
                 </span>
                 <span className="font-mono">{comment.length}/500</span>
               </div>
@@ -230,7 +252,7 @@ function AnketContent() {
                   onClick={() => { setComment(""); setCommentDone(true); }}
                   className="flex-1 rounded-xl border-2 border-line py-3.5 text-[15px] font-semibold text-faint transition-all hover:border-primary/30"
                 >
-                  Atla, direkt gönder
+                  Atla
                 </button>
                 <button
                   onClick={() => {
@@ -241,16 +263,125 @@ function AnketContent() {
                   className="flex-1 rounded-xl py-3.5 text-[15px] font-bold text-white transition-all disabled:opacity-40"
                   style={{ background: comment.length > 0 && comment.length < 15 ? "#D6D3D1" : "#F97316" }}
                 >
-                  {comment.length > 0 ? "Yorumla gönder" : "Gönder"}
+                  Devam et →
                 </button>
               </div>
             </div>
+          ) : !itirafDone ? (
+            /* ── İtiraf yaz (opsiyonel) ── */
+            <div className="animate-pop">
+              <div className="mb-7 text-center">
+                <div className="mb-2.5 font-mono text-[12.5px] font-bold tracking-wider text-primary">
+                  SON ADIM — HİKAYENİ ANLAT
+                </div>
+                <h1 className="mb-2 text-[28px] font-bold leading-tight tracking-[-.3px] text-ink">
+                  İtirafını yaz ✍️
+                </h1>
+                <p className="text-[15px] text-faint">
+                  Anketi doldurdun, ışığın skora karıştı. Şimdi hikayeni anlat — zorunlu değil ama çok değerli.
+                </p>
+              </div>
+
+              <div className="grid gap-[22px] rounded-[22px] border border-line bg-card px-9 py-8 shadow-lg max-md:px-6">
+                {/* İlişki */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-ink">Yurtla ilişkin ne?</label>
+                  <div className="flex flex-wrap gap-2">
+                    {RELATIONS.map((r) => {
+                      const on = r.value === itirafRelation;
+                      return (
+                        <button
+                          key={r.value}
+                          onClick={() => setItirafRelation(r.value)}
+                          aria-pressed={on}
+                          className="rounded-pill border-2 px-4 py-[9px] text-[13.5px] transition-all"
+                          style={{
+                            fontWeight: on ? 600 : 400,
+                            background: on ? "linear-gradient(135deg, #F97316, #EA580C)" : "#fff",
+                            borderColor: on ? "transparent" : "#E7E0DA",
+                            color: on ? "#fff" : "#44403C",
+                          }}
+                        >
+                          {r.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Başlık */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-ink">
+                    Başlık <span className="font-normal text-faint">(tek cümlelik özet)</span>
+                  </label>
+                  <input
+                    value={itirafTitle}
+                    onChange={(e) => setItirafTitle(e.target.value)}
+                    placeholder="örn. Yemekhane efsane ama internet yok"
+                    className="w-full rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15.5px] text-ink outline-none transition-colors focus:border-primary/40"
+                  />
+                </div>
+
+                {/* İtiraf metni */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-ink">İtirafın</label>
+                  <textarea
+                    value={itirafText}
+                    onChange={(e) => setItirafText(e.target.value.slice(0, 600))}
+                    placeholder="İyi yanı, kötü yanı, 'keşke bilseydim' dediğin şey... Kurumsal ağız yasak, insan gibi anlat."
+                    className="min-h-[140px] w-full resize-y rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15px] leading-relaxed text-ink outline-none transition-colors focus:border-primary/40"
+                  />
+                  <div
+                    className="mt-2 flex justify-between text-[12.5px]"
+                    style={{ color: itirafCharCount > 0 && itirafCharCount < 40 ? "#eb8a4a" : "#A8A29E" }}
+                  >
+                    <span>{itirafHint}</span>
+                    <span className="font-mono">{itirafCharCount}/600</span>
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-surface2 px-[18px] py-3.5 text-[13px] leading-relaxed text-teal">
+                  ⚖️ <strong>Kısa hukuk köşesi:</strong> İsim verme, küfür etme, sır ifşa
+                  etme. &ldquo;Müdür kötü&rdquo; değil &ldquo;toplantıda söz kesiliyor&rdquo; yaz — hem daha
+                  faydalı hem dava riski yok.
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setItirafTitle("");
+                      setItirafText("");
+                      setItirafDone(true);
+                    }}
+                    className="flex-1 rounded-xl border-2 border-line py-4 text-[15px] font-semibold text-faint transition-all hover:border-primary/30"
+                  >
+                    Atla, sadece anketi gönder
+                  </button>
+                  <button
+                    onClick={() => itirafValid && setItirafDone(true)}
+                    disabled={!itirafValid}
+                    className="flex-1 rounded-xl py-4 text-[15px] font-bold text-white transition-all"
+                    style={{
+                      background: itirafValid ? "linear-gradient(135deg, #F97316, #EA580C)" : "#E7E0DA",
+                      cursor: itirafValid ? "pointer" : "not-allowed",
+                      boxShadow: itirafValid ? "0 0 30px rgba(249,115,22,.20)" : "none",
+                    }}
+                  >
+                    Anonim yayınla 📮
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
+            /* ── Sonuç ── */
             <>
               <div className="animate-pop rounded-[22px] bg-ink px-12 py-[52px] text-center text-white max-md:px-6">
                 <div className="mb-2.5 text-[44px]">🎉</div>
                 <div className="mb-3.5 font-mono text-xs tracking-widest text-primary-light">
-                  İTİRAF KAYDEDİLDİ — SAĞ OL SinirliPenguen42
+                  {itirafTitle.trim()
+                    ? "ANKET + İTİRAF KAYDEDİLDİ"
+                    : "ANKET KAYDEDİLDİ"
+                  }
                 </div>
                 <h1 className="mb-2.5 text-[32px] font-bold tracking-[-.5px]">Senin verdiğin ışık:</h1>
                 <div className="my-3.5 inline-flex items-center gap-3 rounded-pill bg-white/[.08] px-[30px] py-3.5">
@@ -278,6 +409,10 @@ function AnketContent() {
                       setAnswers([]);
                       setComment("");
                       setCommentDone(false);
+                      setItirafTitle("");
+                      setItirafText("");
+                      setItirafRelation(RELATIONS[0].value);
+                      setItirafDone(false);
                       setPeriod("");
                       setPeriodSelected(false);
                       if (!preselectedId) setSelectedDorm(undefined);
@@ -288,12 +423,6 @@ function AnketContent() {
                   </button>
                 </div>
               </div>
-              <p className="mt-5 text-center text-[13px] text-faint2">
-                Hikâyeni de anlatmak istersen:{" "}
-                <Link href={`/itiraf-yaz?dorm=${dormId}`} className="font-semibold text-primary">
-                  itirafını yaz →
-                </Link>
-              </p>
             </>
           )}
         </div>

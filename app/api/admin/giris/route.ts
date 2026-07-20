@@ -1,10 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { signAdmin } from "@/lib/admin-auth";
+import { prisma } from "@/lib/prisma";
+import { generateCode, hashCode, sendVerificationEmail } from "@/lib/email";
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN!;
 if (!process.env.ADMIN_TOKEN) throw new Error("ADMIN_TOKEN environment variable is required");
 
-const COOKIE_NAME = "ortam_admin";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
+if (!process.env.ADMIN_EMAIL) throw new Error("ADMIN_EMAIL environment variable is required");
+
+const CODE_TTL_MS = 10 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,17 +28,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Şifre yanlış" }, { status: 401 });
     }
 
-    const response = NextResponse.json({ ok: true });
-    response.cookies.set(COOKIE_NAME, signAdmin(ADMIN_TOKEN), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== "development",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+    await prisma.adminOtp.deleteMany({});
+
+    const code = generateCode();
+
+    const otp = await prisma.adminOtp.create({
+      data: {
+        codeHash: hashCode(code),
+        expiresAt: new Date(Date.now() + CODE_TTL_MS),
+      },
     });
 
-    return response;
+    await sendVerificationEmail(ADMIN_EMAIL, code);
+
+    return NextResponse.json({
+      needsOtp: true,
+      otpId: otp.id,
+      message: "Doğrulama kodu admin e-postaya gönderildi",
+    });
   } catch {
-    return NextResponse.json({ error: "Geçersiz istek" }, { status: 400 });
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
 }

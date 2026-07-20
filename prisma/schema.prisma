@@ -100,6 +100,14 @@ model EmailVerification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model AdminOtp {
+  id        String   @id @default(cuid())
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 model Badge {
   id    String      @id @default(cuid())
   slug  String      @unique // "kurdele-kesen", "guvenilir-muhbir" ...

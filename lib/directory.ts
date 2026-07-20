@@ -66,6 +66,7 @@ export interface DistRow {
   count: number;
 }
 export interface ProfileReview {
+  id?: string;
   author: string;
   emoji: string;
   avBg: string;

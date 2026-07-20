@@ -72,6 +72,7 @@ model User {
   surveys       Survey[]
   reviews       Review[]
   votes         Vote[]
+  agrees        Agree[]
   badges        UserBadge[]
   reports       Report[]
   credential    AuthCredential?
@@ -193,6 +194,7 @@ model Review {
   dorm    Dorm     @relation(fields: [dormId], references: [id], onDelete: Cascade)
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   votes   Vote[]
+  agrees  Agree[]
   reports Report[]
 
   @@index([dormId, createdAt])
@@ -201,6 +203,18 @@ model Review {
 
 // "👍 Faydalı" toggle — kullanıcı başına tek oy (spam/şişirmeye karşı).
 model Vote {
+  userId    String
+  reviewId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reviewId])
+}
+
+// "🤝 Aynen yaşadım" toggle — kullanıcı başına tek.
+model Agree {
   userId    String
   reviewId  String
   createdAt DateTime @default(now())

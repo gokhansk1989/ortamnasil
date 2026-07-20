@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { setSessionCookie } from "@/lib/session";
 import { createHmac } from "crypto";
 
+const AUTH_PEPPER = process.env.AUTH_PEPPER!;
+if (!process.env.AUTH_PEPPER) throw new Error("AUTH_PEPPER is required");
+
 function hashEmail(email: string): string {
-  const pepper = process.env.AUTH_PEPPER || "default-pepper";
-  return createHmac("sha256", pepper).update(email.toLowerCase().trim()).digest("hex");
+  return createHmac("sha256", AUTH_PEPPER).update(email.toLowerCase().trim()).digest("hex");
 }
 
 export async function POST(req: NextRequest) {
@@ -22,24 +25,25 @@ export async function POST(req: NextRequest) {
     });
 
     if (!credential) {
-      return NextResponse.json({ error: "Kayıtlı kullanıcı bulunamadı" }, { status: 404 });
+      await new Promise((r) => setTimeout(r, 300));
+      return NextResponse.json({ error: "Giriş bilgileri hatalı" }, { status: 401 });
     }
 
-    // Session cookie set
+    if (!credential.user.emailVerified) {
+      return NextResponse.json({
+        error: "E-posta henüz doğrulanmamış",
+        needsVerification: true,
+        userId: credential.userId,
+      }, { status: 403 });
+    }
+
     const res = NextResponse.json({
       id: credential.user.id,
       nick: credential.user.nick,
       message: "Giriş başarılı",
     });
 
-    res.cookies.set("session", credential.userId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // 30 gün
-      path: "/",
-    });
-
+    setSessionCookie(res, credential.userId);
     return res;
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });

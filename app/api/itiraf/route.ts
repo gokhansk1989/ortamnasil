@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/session";
 import { moderateText } from "@/lib/moderation";
 import type { Light, Relation } from "@prisma/client";
 
 const VALID_RELATIONS: Relation[] = ["CURRENT_RESIDENT", "FORMER_RESIDENT", "SHORT_STAY", "VISITED"];
+const PERIOD_RE = /^\d{4}-\d{4} (Güz|Bahar)$/;
 
 export async function POST(req: NextRequest) {
-  const sessionId = req.cookies.get("session")?.value;
-  if (!sessionId) {
+  const userId = getSessionUserId(req);
+  if (!userId) {
     return NextResponse.json({ error: "Giriş yapılmamış" }, { status: 401 });
   }
 
@@ -45,18 +47,18 @@ export async function POST(req: NextRequest) {
     }
 
     const survey = await prisma.survey.findUnique({
-      where: { dormId_userId: { dormId, userId: sessionId } },
+      where: { dormId_userId: { dormId, userId } },
     });
 
     const review = await prisma.review.create({
       data: {
         dormId,
-        userId: sessionId,
+        userId,
         title,
         text,
         relation: relation as Relation,
         light: survey?.light || ("GRAY" as Light),
-        period: typeof period === "string" ? period : null,
+        period: typeof period === "string" && PERIOD_RE.test(period) ? period : null,
       },
     });
 

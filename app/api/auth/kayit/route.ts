@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { moderateText } from "@/lib/moderation";
 import { createHmac } from "crypto";
+import { generateCode, hashCode, sendVerificationEmail } from "@/lib/email";
+
+const AUTH_PEPPER = process.env.AUTH_PEPPER!;
+if (!process.env.AUTH_PEPPER) throw new Error("AUTH_PEPPER is required");
 
 function hashEmail(email: string): string {
-  const pepper = process.env.AUTH_PEPPER || "default-pepper";
-  return createHmac("sha256", pepper).update(email.toLowerCase().trim()).digest("hex");
+  return createHmac("sha256", AUTH_PEPPER).update(email.toLowerCase().trim()).digest("hex");
 }
+
+const HTML_RE = /<[^>]*>/;
+const CODE_TTL_MS = 15 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +25,15 @@ export async function POST(req: NextRequest) {
     const trimmedNick = nick.trim();
     if (trimmedNick.length < 3 || trimmedNick.length > 30) {
       return NextResponse.json({ error: "Nick 3-30 karakter olmalı" }, { status: 400 });
+    }
+
+    if (HTML_RE.test(trimmedNick)) {
+      return NextResponse.json({ error: "Nick'te HTML kullanılamaz" }, { status: 400 });
+    }
+
+    const nickMod = moderateText(trimmedNick);
+    if (!nickMod.ok) {
+      return NextResponse.json({ error: `Nick: ${nickMod.reason}` }, { status: 422 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,13 +49,14 @@ export async function POST(req: NextRequest) {
     const emailHash = hashEmail(email);
     const existingEmail = await prisma.authCredential.findUnique({ where: { emailHash } });
     if (existingEmail) {
-      return NextResponse.json({ error: "Bu e-posta zaten kayıtlı" }, { status: 409 });
+      return NextResponse.json({ error: "Bu bilgilerle işlem yapılamadı" }, { status: 409 });
     }
 
     const user = await prisma.user.create({
       data: {
         nick: trimmedNick,
         isAdult: true,
+        emailVerified: false,
       },
     });
 
@@ -50,21 +67,24 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const res = NextResponse.json({
-      id: user.id,
-      nick: user.nick,
-      message: "Kayıt başarılı",
-    }, { status: 201 });
+    const code = generateCode();
 
-    res.cookies.set("session", user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30,
-      path: "/",
+    await prisma.emailVerification.create({
+      data: {
+        userId: user.id,
+        codeHash: hashCode(code),
+        expiresAt: new Date(Date.now() + CODE_TTL_MS),
+      },
     });
 
-    return res;
+    await sendVerificationEmail(email.toLowerCase().trim(), code);
+
+    return NextResponse.json({
+      id: user.id,
+      nick: user.nick,
+      needsVerification: true,
+      message: "Doğrulama kodu e-postana gönderildi",
+    }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }

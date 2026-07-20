@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/session";
 
 export async function GET(req: NextRequest) {
-  const sessionId = req.cookies.get("session")?.value;
-  if (!sessionId) {
+  const userId = getSessionUserId(req);
+  if (!userId) {
     return NextResponse.json({ error: "Giriş yapılmamış" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: sessionId },
+    where: { id: userId },
     include: {
       badges: { include: { badge: true } },
       _count: { select: { reviews: true, surveys: true, dorms: true } },

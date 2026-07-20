@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/session";
 import type { ReportReason } from "@prisma/client";
 
 const VALID_REASONS: ReportReason[] = ["NAME_DISCLOSURE", "PROFANITY", "SPAM"];
 
 export async function POST(req: NextRequest) {
-  const sessionId = req.cookies.get("session")?.value;
-  if (!sessionId) {
+  const userId = getSessionUserId(req);
+  if (!userId) {
     return NextResponse.json({ error: "Giriş yapılmamış" }, { status: 401 });
   }
 
@@ -17,7 +18,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "reviewId ve reason gerekli" }, { status: 400 });
     }
 
-    if (!VALID_REASONS.includes(reason)) {
+    if (typeof reviewId !== "string" || typeof reason !== "string") {
+      return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
+    }
+
+    if (!VALID_REASONS.includes(reason as ReportReason)) {
       return NextResponse.json({ error: "Geçersiz bildirim sebebi" }, { status: 400 });
     }
 
@@ -27,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     const existing = await prisma.report.findUnique({
-      where: { reviewId_reporterId: { reviewId, reporterId: sessionId } },
+      where: { reviewId_reporterId: { reviewId, reporterId: userId } },
     });
     if (existing) {
       return NextResponse.json({ error: "Bu itirafı zaten bildirmişsin" }, { status: 409 });
@@ -36,7 +41,7 @@ export async function POST(req: NextRequest) {
     await prisma.report.create({
       data: {
         reviewId,
-        reporterId: sessionId,
+        reporterId: userId,
         reason: reason as ReportReason,
       },
     });

@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/session";
 
 export async function POST(req: NextRequest) {
-  const sessionId = req.cookies.get("session")?.value;
-  if (!sessionId) {
+  const userId = getSessionUserId(req);
+  if (!userId) {
     return NextResponse.json({ error: "Giriş yapılmamış" }, { status: 401 });
   }
 
   try {
     const { reviewId } = await req.json();
 
-    if (!reviewId) {
+    if (!reviewId || typeof reviewId !== "string") {
       return NextResponse.json({ error: "reviewId gerekli" }, { status: 400 });
     }
 
@@ -20,27 +21,21 @@ export async function POST(req: NextRequest) {
     }
 
     const existing = await prisma.vote.findUnique({
-      where: { userId_reviewId: { userId: sessionId, reviewId } },
+      where: { userId_reviewId: { userId, reviewId } },
     });
 
     if (existing) {
-      await prisma.vote.delete({
-        where: { userId_reviewId: { userId: sessionId, reviewId } },
-      });
-      await prisma.review.update({
-        where: { id: reviewId },
-        data: { helpfulCount: { decrement: 1 } },
-      });
+      await prisma.$transaction([
+        prisma.vote.delete({ where: { userId_reviewId: { userId, reviewId } } }),
+        prisma.review.update({ where: { id: reviewId }, data: { helpfulCount: { decrement: 1 } } }),
+      ]);
       return NextResponse.json({ voted: false, message: "Oy geri alındı" });
     }
 
-    await prisma.vote.create({
-      data: { userId: sessionId, reviewId },
-    });
-    await prisma.review.update({
-      where: { id: reviewId },
-      data: { helpfulCount: { increment: 1 } },
-    });
+    await prisma.$transaction([
+      prisma.vote.create({ data: { userId, reviewId } }),
+      prisma.review.update({ where: { id: reviewId }, data: { helpfulCount: { increment: 1 } } }),
+    ]);
 
     return NextResponse.json({ voted: true, message: "Oy verildi" }, { status: 201 });
   } catch {

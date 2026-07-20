@@ -62,18 +62,20 @@ enum ModerationStatus {
 // --- Kimlik -----------------------------------------------------------------
 
 model User {
-  id        String   @id @default(cuid())
-  nick      String   @unique // benzersizlik BACKEND'de garanti edilir
-  isAdult   Boolean  @default(false) // 18+ doğrulaması (KVKK)
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  nick          String   @unique
+  isAdult       Boolean  @default(false)
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
 
-  dorms      Dorm[]           @relation("CreatedDorms")
-  surveys    Survey[]
-  reviews    Review[]
-  votes      Vote[]
-  badges     UserBadge[]
-  reports    Report[]
-  credential AuthCredential?
+  dorms         Dorm[]              @relation("CreatedDorms")
+  surveys       Survey[]
+  reviews       Review[]
+  votes         Vote[]
+  badges        UserBadge[]
+  reports       Report[]
+  credential    AuthCredential?
+  verification  EmailVerification?
 }
 
 // E-posta ↔ nick bağını kasıtlı zayıflatan ayrı tablo.
@@ -82,6 +84,17 @@ model AuthCredential {
   id        String   @id @default(cuid())
   emailHash String   @unique
   userId    String   @unique
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

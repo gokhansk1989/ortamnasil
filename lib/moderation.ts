@@ -31,7 +31,13 @@ export interface ModerationResult {
   reason?: string;
 }
 
+const HTML_TAG_RE = /<\/?[a-z][\s\S]*?>/i;
+
 export function moderateText(text: string): ModerationResult {
+  if (HTML_TAG_RE.test(text)) {
+    return { ok: false, reason: "HTML etiketi kullanılamaz." };
+  }
+
   if (PROFANITY_RE.test(text)) {
     return { ok: false, reason: "Küfür veya hakaret içeriyor." };
   }

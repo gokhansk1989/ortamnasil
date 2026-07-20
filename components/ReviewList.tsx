@@ -179,7 +179,7 @@ export function ReviewList({ reviews }: { reviews: ProfileReview[] }) {
                   <span className="text-[15px]" style={{ transform: s.agreed ? "scale(1.2)" : "scale(1)", transition: "transform 0.2s" }}>
                     🤝
                   </span>
-                  Aynen yaşadım
+                  Faydasız
                   <span className="font-mono text-[12px]">({same})</span>
                 </button>
                 <button

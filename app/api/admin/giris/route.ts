@@ -1,31 +1,56 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createHmac } from "crypto";
+import bcrypt from "bcryptjs";
 import { generateCode, hashCode, sendVerificationEmail } from "@/lib/email";
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN!;
-if (!process.env.ADMIN_TOKEN) throw new Error("ADMIN_TOKEN environment variable is required");
+const AUTH_PEPPER = process.env.AUTH_PEPPER!;
+if (!process.env.AUTH_PEPPER) throw new Error("AUTH_PEPPER is required");
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
-if (!process.env.ADMIN_EMAIL) throw new Error("ADMIN_EMAIL environment variable is required");
+if (!process.env.ADMIN_EMAIL) throw new Error("ADMIN_EMAIL is required");
 
 const CODE_TTL_MS = 10 * 60 * 1000;
 
+function hashEmail(email: string): string {
+  return createHmac("sha256", AUTH_PEPPER).update(email.toLowerCase().trim()).digest("hex");
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { password } = body;
+    const { email, password } = await request.json();
 
-    if (!password || typeof password !== "string") {
-      return NextResponse.json({ error: "Şifre gerekli" }, { status: 400 });
+    if (!email || !password || typeof email !== "string" || typeof password !== "string") {
+      return NextResponse.json({ error: "E-posta ve şifre gerekli" }, { status: 400 });
     }
 
     if (password.length > 200) {
-      return NextResponse.json({ error: "Geçersiz şifre" }, { status: 400 });
+      return NextResponse.json({ error: "Geçersiz giriş bilgileri" }, { status: 400 });
     }
 
-    if (password !== ADMIN_TOKEN) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const emailHash = hashEmail(normalizedEmail);
+
+    const credential = await prisma.authCredential.findUnique({
+      where: { emailHash },
+    });
+
+    if (!credential) {
+      await bcrypt.hash("dummy", 12);
       await new Promise((r) => setTimeout(r, 500));
-      return NextResponse.json({ error: "Şifre yanlış" }, { status: 401 });
+      return NextResponse.json({ error: "E-posta veya şifre hatalı" }, { status: 401 });
+    }
+
+    const passwordValid = await bcrypt.compare(password, credential.passwordHash);
+    if (!passwordValid) {
+      await new Promise((r) => setTimeout(r, 500));
+      return NextResponse.json({ error: "E-posta veya şifre hatalı" }, { status: 401 });
+    }
+
+    const adminEmailHash = hashEmail(ADMIN_EMAIL);
+    if (emailHash !== adminEmailHash) {
+      await new Promise((r) => setTimeout(r, 500));
+      return NextResponse.json({ error: "Bu hesap admin yetkisine sahip değil" }, { status: 403 });
     }
 
     await prisma.adminOtp.deleteMany({});
@@ -39,12 +64,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    await sendVerificationEmail(ADMIN_EMAIL, code);
+    await sendVerificationEmail(normalizedEmail, code);
 
     return NextResponse.json({
       needsOtp: true,
       otpId: otp.id,
-      message: "Doğrulama kodu admin e-postaya gönderildi",
+      message: "Doğrulama kodu e-postana gönderildi",
     });
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });

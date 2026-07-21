@@ -12,10 +12,9 @@ async function hmacSha256(secret: string, data: string): Promise<string> {
 }
 
 async function verifyAdminCookie(cookieValue: string | undefined): Promise<boolean> {
-  const token = process.env.ADMIN_TOKEN;
   const secret = process.env.SESSION_SECRET;
-  if (!cookieValue || !token || !secret) return false;
-  const expected = await hmacSha256(secret, token);
+  if (!cookieValue || !secret) return false;
+  const expected = await hmacSha256(secret, "ortamnasil-admin-verified");
   if (cookieValue.length !== expected.length) return false;
   let match = true;
   for (let i = 0; i < cookieValue.length; i++) {

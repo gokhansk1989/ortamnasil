@@ -3,10 +3,11 @@
 import { useState, useRef } from "react";
 import { Logo } from "@/components/Logo";
 
-type Step = "password" | "otp";
+type Step = "credentials" | "otp";
 
 export default function AdminGirisPage() {
-  const [step, setStep] = useState<Step>("password");
+  const [step, setStep] = useState<Step>("credentials");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otpId, setOtpId] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -42,7 +43,7 @@ export default function AdminGirisPage() {
     }
   }
 
-  async function handlePassword(e: React.FormEvent) {
+  async function handleCredentials(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -51,7 +52,7 @@ export default function AdminGirisPage() {
       const res = await fetch("/api/admin/giris", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
 
@@ -100,7 +101,7 @@ export default function AdminGirisPage() {
   }
 
   function goBack() {
-    setStep("password");
+    setStep("credentials");
     setPassword("");
     setCode(["", "", "", "", "", ""]);
     setError("");
@@ -117,21 +118,37 @@ export default function AdminGirisPage() {
           </div>
         </div>
 
-        {step === "password" ? (
+        {step === "credentials" ? (
           <form
-            onSubmit={handlePassword}
+            onSubmit={handleCredentials}
             className="rounded-[22px] border border-white/10 bg-white/[.06] px-8 py-8 backdrop-blur-sm"
           >
+            <div className="mb-4">
+              <label className="mb-2 block text-sm font-semibold text-white">
+                E-posta
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                placeholder="admin@ortamnasil.com"
+                autoFocus
+                autoComplete="email"
+                className="w-full rounded-xl border-2 bg-white/10 px-4 py-3.5 text-[15px] text-white outline-none placeholder:text-onDarkMuted"
+                style={{ borderColor: error ? "#e05d4b" : "rgba(255,255,255,0.15)" }}
+              />
+            </div>
+
             <div className="mb-5">
               <label className="mb-2 block text-sm font-semibold text-white">
-                Yönetici şifresi
+                Şifre
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError(""); }}
                 placeholder="••••••••"
-                autoFocus
+                autoComplete="current-password"
                 className="w-full rounded-xl border-2 bg-white/10 px-4 py-3.5 text-[15px] text-white outline-none placeholder:text-onDarkMuted"
                 style={{ borderColor: error ? "#e05d4b" : "rgba(255,255,255,0.15)" }}
               />
@@ -144,7 +161,7 @@ export default function AdminGirisPage() {
 
             <button
               type="submit"
-              disabled={loading || password.length < 1}
+              disabled={loading || !email || password.length < 1}
               className="gradient-pink w-full rounded-xl py-3.5 text-[15px] font-bold text-white shadow-glow transition-transform hover:scale-[1.02] disabled:opacity-50"
             >
               {loading ? "Kontrol ediliyor..." : "Devam et"}
@@ -159,7 +176,7 @@ export default function AdminGirisPage() {
             <div className="mb-6 text-center">
               <div className="mb-2 text-[28px]">📬</div>
               <p className="text-[14px] text-onDarkMuted">
-                Admin e-postana 6 haneli doğrulama kodu gönderildi.
+                E-postana 6 haneli doğrulama kodu gönderildi.
               </p>
             </div>
 

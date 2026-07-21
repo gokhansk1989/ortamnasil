@@ -3,11 +3,10 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 
-const ADMIN_SESSION_NAME = "admin_session";
+import { verifyAdminCookie } from "@/lib/admin-auth";
 
 export async function POST(req: NextRequest) {
-  const adminSession = req.cookies.get(ADMIN_SESSION_NAME)?.value;
-  if (!adminSession) {
+  if (!verifyAdminCookie(req.cookies.get("ortam_admin")?.value)) {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
 

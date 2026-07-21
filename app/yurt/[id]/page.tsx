@@ -138,31 +138,37 @@ export default function DormPage({ params }: { params: { id: string } }) {
             {/* KATEGORİ KIRILIMI */}
             <div className="mb-5 rounded-[22px] border border-line bg-card px-8 py-7">
               <h2 className="mb-5 text-[19px] font-bold text-ink">Kategori kırılımı</h2>
-              <div className="grid gap-4">
-                {c.categories.map((k) => {
-                  const kl = LIGHTS[k.light];
-                  return (
-                    <div
-                      key={k.name}
-                      className="grid grid-cols-[180px_1fr_130px] items-center gap-4 max-md:grid-cols-[110px_1fr]"
-                    >
-                      <div className="text-[14.5px] text-body">{k.name}</div>
-                      <div className="h-2.5 overflow-hidden rounded-pill bg-surface">
-                        <div
-                          className="h-full rounded-pill"
-                          style={{ background: kl.dot, width: k.w }}
-                        />
-                      </div>
+              {c.categories.length > 0 ? (
+                <div className="grid gap-4">
+                  {c.categories.map((k) => {
+                    const kl = LIGHTS[k.light];
+                    return (
                       <div
-                        className="text-right text-[12.5px] font-semibold max-md:col-span-2 max-md:text-left"
-                        style={{ color: kl.badgeFg }}
+                        key={k.name}
+                        className="grid grid-cols-[180px_1fr_130px] items-center gap-4 max-md:grid-cols-[110px_1fr]"
                       >
-                        {k.verdict}
+                        <div className="text-[14.5px] text-body">{k.name}</div>
+                        <div className="h-2.5 overflow-hidden rounded-pill bg-surface">
+                          <div
+                            className="h-full rounded-pill"
+                            style={{ background: kl.dot, width: k.w }}
+                          />
+                        </div>
+                        <div
+                          className="text-right text-[12.5px] font-semibold max-md:col-span-2 max-md:text-left"
+                          style={{ color: kl.badgeFg }}
+                        >
+                          {k.verdict}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-6 text-center text-sm text-faint">
+                  Henüz yeterli değerlendirme yok. İlk anketi sen doldur!
+                </div>
+              )}
               <div className="mt-5 border-t border-dashed border-line pt-4 text-[13px] text-faint">
                 {c.ageNote}
               </div>
@@ -193,12 +199,8 @@ export default function DormPage({ params }: { params: { id: string } }) {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex items-center justify-between border-t border-dashed border-line pt-3.5 text-[13px] text-faint">
-                <span>
-                  Son 6 ayda trend:{" "}
-                  <strong className="text-light-green">{c.trend}</strong>
-                </span>
-                <span className="font-mono text-xs">son güncelleme: 2 gün önce</span>
+              <div className="mt-4 border-t border-dashed border-line pt-3.5 text-[13px] text-faint">
+                Trend: <strong className="text-body">{c.trend}</strong>
               </div>
             </div>
 

@@ -138,7 +138,7 @@ export function YurtlarExplorer({ initialQuery = "" }: { initialQuery?: string }
                     <div className="mt-[3px] text-[13px] text-faint">{c.meta}</div>
                   </div>
                   <div className="text-[13.5px] italic leading-normal text-muted max-md:hidden">
-                    &ldquo;{c.quote}&rdquo;
+                    {c.reviews > 0 ? `${c.reviews} değerlendirme` : "Henüz değerlendirme yok"}
                   </div>
                   <div className="flex flex-col items-end gap-2 max-md:col-span-2 max-md:flex-row max-md:items-center max-md:justify-between">
                     <span

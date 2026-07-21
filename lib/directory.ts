@@ -1,4 +1,4 @@
-import { ALL_DORMS, searchDorms, dormColor, type Dorm } from "./dorms";
+import { ALL_DORMS, dormColor, type Dorm } from "./dorms";
 import type { LightKey } from "./lights";
 
 export interface DirectoryRow {
@@ -11,25 +11,9 @@ export interface DirectoryRow {
   sector: string;
   reviews: number;
   light: LightKey;
-  quote: string;
 }
 
-const QUOTES_DIR = [
-  "Yemek doyuruyor, giriş 24 saat serbest.",
-  "Oda arkadaşım denk geldi, yönetim ilgili.",
-  "İnternet uçuyor, kütüphaneye kaçmaya gerek yok.",
-  "Temiz ve merkezi ama oda biraz kalabalık.",
-  "Konfor iyi, fiyat cebi biraz yakıyor.",
-  "Kampüse 5 dakika dediler; yürüyerek destan.",
-  "İsmi 'Huzur' ama kışın botla uyuyorsun.",
-  "Giriş saati 21:00, hafta sonu bile taviz yok.",
-  "Kimse bir şey yazmamış. Muhbir aranıyor.",
-  "Yemekhaneye dua ederek gir.",
-  "Konum harika ama fiyat da harika değil.",
-  "Isınma sıkıntısı yok, banyo temiz.",
-];
-
-function dormToDir(d: Dorm, i: number): DirectoryRow {
+function dormToDir(d: Dorm): DirectoryRow {
   const pal = dormColor(d.type);
   return {
     id: d.id,
@@ -41,7 +25,6 @@ function dormToDir(d: Dorm, i: number): DirectoryRow {
     sector: d.type,
     reviews: d.reviewCount,
     light: d.light,
-    quote: QUOTES_DIR[i % QUOTES_DIR.length],
   };
 }
 
@@ -50,8 +33,6 @@ export const directory: DirectoryRow[] = ALL_DORMS
   .map(dormToDir);
 
 export const directorySectors = ["Tümü", "KYK", "Özel"];
-
-// --- Yurt profili (tek yurt için detay) ------------------------------------
 
 export interface CategoryRow {
   name: string;
@@ -98,7 +79,6 @@ export interface DormProfile {
 }
 
 function generateProfile(d: Dorm): DormProfile {
-  const pal = dormColor(d.type);
   return {
     id: d.id,
     name: d.name,
@@ -111,24 +91,15 @@ function generateProfile(d: Dorm): DormProfile {
     creatorNick: d.addedBy,
     light: d.light,
     reviewCount: d.reviewCount,
-    trend: d.light === "green" ? "yeşilleşiyor ↗" : d.light === "red" ? "kızarıyor ↘" : "sabit →",
+    trend: "Henüz veri yok",
     ageNote: `${d.city}, ${d.district} · ${d.gender} yurt · ${d.capacityLabel || "kapasite bilinmiyor"}`,
-    categories: [
-      { name: "Yemek / yemekhane", w: "78%", light: "green", verdict: "Doyuruyor" },
-      { name: "Temizlik", w: "72%", light: "green", verdict: "Görevli ilgili" },
-      { name: "İnternet", w: "66%", light: "yellow", verdict: "İdare eder" },
-      { name: "Giriş-çıkış / özgürlük", w: "90%", light: "green", verdict: "Serbest" },
-      { name: "Isınma / konfor", w: "74%", light: "green", verdict: "Sıcak" },
-      { name: "Oda arkadaşı kaderi", w: "58%", light: "yellow", verdict: "Değişken" },
-      { name: "Konum / ulaşım", w: "70%", light: "green", verdict: "Uygun" },
-      { name: "Yönetim", w: "64%", light: "yellow", verdict: "Bürokratik ama çözer" },
-    ],
+    categories: [],
     distribution: [
-      { name: "Tavsiye edilir", dot: "#2eb586", w: "62%", count: Math.round(d.reviewCount * 0.62) },
-      { name: "Ortalama", dot: "#e8b93c", w: "21%", count: Math.round(d.reviewCount * 0.21) },
-      { name: "Dikkatli ol", dot: "#eb8a4a", w: "10%", count: Math.round(d.reviewCount * 0.1) },
-      { name: "Uzak dur", dot: "#e05d4b", w: "5%", count: Math.round(d.reviewCount * 0.05) },
-      { name: "Pas geçti", dot: "#b9c9c4", w: "2%", count: Math.round(d.reviewCount * 0.02) },
+      { name: "Tavsiye edilir", dot: "#2eb586", w: "0%", count: 0 },
+      { name: "Ortalama", dot: "#e8b93c", w: "0%", count: 0 },
+      { name: "Dikkatli ol", dot: "#eb8a4a", w: "0%", count: 0 },
+      { name: "Uzak dur", dot: "#e05d4b", w: "0%", count: 0 },
+      { name: "Pas geçti", dot: "#b9c9c4", w: "0%", count: 0 },
     ],
     quickFacts: [
       { k: "Yurt tipi", v: d.type, tone: d.type === "KYK" ? "green" : "yellow" },
@@ -136,11 +107,7 @@ function generateProfile(d: Dorm): DormProfile {
       { k: "Şehir", v: d.city, tone: "green" },
       { k: "İlçe", v: d.district, tone: "yellow" },
     ],
-    reviews: [
-      { author: "GeceKuşuKirpi", emoji: "🦔", avBg: "#e8f3f0", role: "Şu an kalıyor", when: "2 gün önce", light: "green", up: 24, same: 11, text: "Giriş saati serbest, geç kalınca kapıda beklemiyorsun. Yemek de sanılanın aksine doyurucu — akşam çorbası iyi." },
-      { author: "UykusuzBaykuş", emoji: "🦉", avBg: "#fdf3e4", role: "Eskiden kaldı", when: "1 hafta önce", light: "green", up: 17, same: 6, text: "Oda arkadaşı ataması biraz kader ama benimkiler uyumluydu. İnternet ödev için yeter." },
-      { author: "SessizFlamingoX", emoji: "🦩", avBg: "#fcebe8", role: "Kısa süre kaldı", when: "3 hafta önce", light: "yellow", up: 9, same: 3, text: "Konum fena değil. Kalabalık oda olabiliyor, ders çalışmak için etüt salonuna in. Fiyatına göre makul." },
-    ],
+    reviews: [],
   };
 }
 

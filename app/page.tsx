@@ -11,7 +11,6 @@ import { MarqueeTicker } from "@/components/MarqueeTicker";
 import { LiveStats } from "@/components/LiveStats";
 import { LiveIndicator } from "@/components/LiveIndicator";
 import { StaggerCards } from "@/components/StaggerCards";
-import { ticker } from "@/lib/data";
 import { STATS } from "@/lib/dorms";
 
 const steps = [
@@ -84,7 +83,7 @@ export default function HomePage() {
               CANLI — SON İTİRAFLAR
             </span>
           </div>
-          <MarqueeTicker items={ticker} />
+          <MarqueeTicker />
         </div>
       </section>
 

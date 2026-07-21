@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { moderateText } from "@/lib/moderation";
 import { createHmac } from "crypto";
+import bcrypt from "bcryptjs";
 import { generateCode, hashCode, sendVerificationEmail } from "@/lib/email";
 
 const AUTH_PEPPER = process.env.AUTH_PEPPER!;
@@ -16,10 +17,14 @@ const CODE_TTL_MS = 15 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
   try {
-    const { nick, email } = await req.json();
+    const { nick, email, password } = await req.json();
 
-    if (!nick || !email) {
-      return NextResponse.json({ error: "Nick ve e-posta gerekli" }, { status: 400 });
+    if (!nick || !email || !password) {
+      return NextResponse.json({ error: "Nick, e-posta ve şifre gerekli" }, { status: 400 });
+    }
+
+    if (typeof password !== "string" || password.length < 6) {
+      return NextResponse.json({ error: "Şifre en az 6 karakter olmalı" }, { status: 400 });
     }
 
     const trimmedNick = nick.trim();
@@ -60,9 +65,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const passwordHash = await bcrypt.hash(password, 12);
+
     await prisma.authCredential.create({
       data: {
         emailHash,
+        passwordHash,
         userId: user.id,
       },
     });

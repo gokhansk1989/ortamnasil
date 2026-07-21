@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { LIGHTS } from "@/lib/lights";
 import type { ProfileReview } from "@/lib/directory";
 
@@ -21,6 +22,13 @@ interface ReviewState {
 }
 
 export function ReviewList({ reviews }: { reviews: ProfileReview[] }) {
+  const router = useRouter();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/ben").then((r) => setLoggedIn(r.ok)).catch(() => {});
+  }, []);
+
   const [states, setStates] = useState<Record<number, ReviewState>>({});
   const [reportIdx, setReportIdx] = useState<number | null>(null);
   const [reportSending, setReportSending] = useState(false);
@@ -151,13 +159,15 @@ export function ReviewList({ reviews }: { reviews: ProfileReview[] }) {
               <p className="text-[15px] leading-relaxed text-body">{r.text}</p>
               <div className="mt-3.5 flex gap-2 text-[13px]">
                 <button
-                  onClick={() => toggleVote(i, r.id)}
+                  onClick={() => loggedIn ? toggleVote(i, r.id) : router.push("/giris")}
                   disabled={s.voteLoading}
                   className="inline-flex items-center gap-1.5 rounded-pill border px-3.5 py-[7px] font-medium transition-all"
                   style={{
                     background: s.voted ? "#ECFDF5" : "transparent",
                     borderColor: s.voted ? "#A7F3D0" : "#F0EBE5",
                     color: s.voted ? "#0d7a6f" : "#78716C",
+                    opacity: loggedIn ? 1 : 0.55,
+                    cursor: loggedIn ? "pointer" : "default",
                   }}
                 >
                   <span className="text-[15px]" style={{ transform: s.voted ? "scale(1.2)" : "scale(1)", transition: "transform 0.2s" }}>
@@ -167,13 +177,15 @@ export function ReviewList({ reviews }: { reviews: ProfileReview[] }) {
                   <span className="font-mono text-[12px]">({up})</span>
                 </button>
                 <button
-                  onClick={() => toggleAgree(i, r.id)}
+                  onClick={() => loggedIn ? toggleAgree(i, r.id) : router.push("/giris")}
                   disabled={s.agreeLoading}
                   className="inline-flex items-center gap-1.5 rounded-pill border px-3.5 py-[7px] font-medium transition-all"
                   style={{
                     background: s.agreed ? "#FFF7ED" : "transparent",
                     borderColor: s.agreed ? "#FED7AA" : "#F0EBE5",
                     color: s.agreed ? "#EA580C" : "#78716C",
+                    opacity: loggedIn ? 1 : 0.55,
+                    cursor: loggedIn ? "pointer" : "default",
                   }}
                 >
                   <span className="text-[15px]" style={{ transform: s.agreed ? "scale(1.2)" : "scale(1)", transition: "transform 0.2s" }}>
@@ -183,15 +195,16 @@ export function ReviewList({ reviews }: { reviews: ProfileReview[] }) {
                   <span className="font-mono text-[12px]">({same})</span>
                 </button>
                 <button
-                  onClick={() => !s.reported && setReportIdx(i)}
+                  onClick={() => loggedIn ? (!s.reported && setReportIdx(i)) : router.push("/giris")}
                   disabled={s.reported}
                   className="inline-flex items-center gap-1.5 rounded-pill border border-line px-3.5 py-[7px] font-medium transition-all"
                   style={{
                     color: s.reported ? "#A8A29E" : "#78716C",
-                    cursor: s.reported ? "default" : "pointer",
+                    cursor: s.reported || !loggedIn ? "default" : "pointer",
+                    opacity: loggedIn ? 1 : 0.55,
                   }}
                 >
-                  {s.reported ? "✅ Bildirildi" : "🚩 Bildir"}
+                  {s.reported ? "Bildirildi" : "Bildir"}
                 </button>
               </div>
             </div>

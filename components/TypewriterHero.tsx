@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const WORDS = ["içerden öğren.", "komşundan sor.", "anonim dinle.", "ışığa bak."];
+const WORDS = ["içeriden öğren.", "önce buraya bak.", "deneyimini paylaş.", "ilk yorumu sen yaz."];
 
 export function TypewriterHero() {
   const [text, setText] = useState("");

@@ -214,7 +214,7 @@ function AnketContent() {
                   <span className="rounded-pill bg-primary/10 px-3.5 py-[5px] text-[12.5px] font-bold text-primary">
                     {q.topic}
                   </span>
-                  <span className="font-mono text-[13px] text-faint">{step + 1}/9</span>
+                  <span className="font-mono text-[13px] text-faint">{step + 1}/{QUESTIONS.length}</span>
                 </div>
                 <h1 className="mb-2 text-[28px] font-bold leading-tight tracking-[-.3px] text-ink">
                   {q.title}

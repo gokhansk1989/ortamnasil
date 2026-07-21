@@ -133,7 +133,6 @@ function generateProfile(d: Dorm): DormProfile {
     quickFacts: [
       { k: "Yurt tipi", v: d.type, tone: d.type === "KYK" ? "green" : "yellow" },
       { k: "Kapasite", v: d.capacityLabel || "—", tone: "yellow" },
-      { k: "Cinsiyet", v: d.gender, tone: "green" },
       { k: "Şehir", v: d.city, tone: "green" },
       { k: "İlçe", v: d.district, tone: "yellow" },
     ],

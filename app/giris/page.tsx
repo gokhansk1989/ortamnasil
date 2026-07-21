@@ -1,13 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 
-const POOL = [
-  "KızgınKanguru7", "MelankolikMartı", "SabırlıAhtapot", "KaçakÇaycı",
-  "GizliVizyoner", "YorgunUnicorn", "PasifAgresifPanda", "MesaideKayıp",
+const ADJECTIVES = [
+  "Kızgın", "Melankolik", "Sabırlı", "Gizli", "Yorgun", "Pasif", "Neşeli",
+  "Huzursuz", "Kaçak", "Hayalet", "Sessiz", "Uykusuz", "Dalgın", "Aceleci",
+  "Sinsi", "Gizemli", "Sakin", "Gürültücü", "Tembel", "Hırslı", "Utangaç",
+  "Cesur", "Kurnaz", "Alıngan", "Şanslı", "Şüpheci", "Panikçi", "Romantik",
+  "Karamsar", "İyimser", "Kayıp", "Gezgin", "Meraklı",
+  "Dramatik", "Nostaljik", "Çılgın", "Fırtınalı", "Soğukkanlı", "Dertli",
+  "Muzip", "Kaotik", "Epik", "Efsanevi", "Asi", "Takılgan", "Hayalperest",
+  "Maceracı", "Filozofik", "Garip", "Şaşkın",
+];
+
+const NOUNS = [
+  "Kanguru", "Martı", "Ahtapot", "Penguen", "Unicorn", "Panda", "Tilki",
+  "Baykuş", "Kedi", "Sincap", "Koala", "Flamingo", "Papağan", "Tavşan",
+  "Kurt", "Kartal", "Yunus", "Kirpi", "Bukalemun", "Arı", "Karga",
+  "Çaycı", "Vizyoner", "Gezgin", "Kaşif", "Kaptan", "Müfettiş", "Ninja",
+  "Korsan", "Astronot", "Şef", "Derviş", "Samuray", "Kahin", "Simyacı",
+  "Hacker", "Pilot", "Viking", "Şövalye", "Denizci", "Palyaço", "Casus",
+  "Postacı", "Tamirci", "Garson", "Aşçıbaşı", "Muhtar", "Bekçi", "Kapıcı",
+  "Stajyer",
+];
+
+function generateNick(): string {
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  const num = Math.floor(Math.random() * 99) + 1;
+  return `${adj}${noun}${num}`;
+}
+
+const STATIC_SHOWCASE = [
+  "KızgınKanguru7", "MelankolikMartı42", "SabırlıAhtapot19", "KaçakÇaycı88",
 ];
 
 type Tab = "kayit" | "giris";
@@ -19,18 +47,24 @@ export default function GirisPage() {
   const [step, setStep] = useState<Step>("form");
   const [nick, setNick] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [userId, setUserId] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [showcase, setShowcase] = useState(STATIC_SHOWCASE);
   const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    setShowcase([generateNick(), generateNick(), generateNick(), generateNick()]);
+  }, []);
 
   const clean = nick.trim();
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const canRegister = clean.length >= 3 && emailValid;
-  const canLogin = emailValid;
+  const canRegister = clean.length >= 3 && emailValid && password.length >= 6;
+  const canLogin = emailValid && password.length >= 1;
   const fullCode = code.join("");
   const canVerify = fullCode.length === 6;
 
@@ -67,7 +101,7 @@ export default function GirisPage() {
       const res = await fetch("/api/auth/kayit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nick: clean, email }),
+        body: JSON.stringify({ nick: clean, email, password }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -94,7 +128,7 @@ export default function GirisPage() {
       const res = await fetch("/api/auth/giris", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -205,7 +239,7 @@ export default function GirisPage() {
                 </h1>
                 <p className="text-[15.5px] leading-relaxed text-muted">
                   {tab === "kayit"
-                    ? "Gerçek ismini isteMİyoruz. Buradaki kimliğin, seçeceğin takma ad."
+                    ? "Gerçek ismini istemiyoruz. Buradaki kimliğin, seçeceğin takma ad."
                     : "E-postanla giriş yap — kimliğin her zamanki gibi gizli."}
                 </p>
               </div>
@@ -247,7 +281,7 @@ export default function GirisPage() {
                         className="flex-1 rounded-xl border-2 border-line bg-card px-4 py-3.5 font-mono text-[15px] text-ink outline-none transition-colors focus:border-primary/40"
                       />
                       <button
-                        onClick={() => setNick(POOL[Math.floor(Math.random() * POOL.length)])}
+                        onClick={() => setNick(generateNick())}
                         title="Rastgele öner"
                         className="rounded-xl border-2 border-line bg-surface px-4 text-lg transition-all hover:scale-105 hover:border-primary/30"
                       >
@@ -276,6 +310,27 @@ export default function GirisPage() {
                   />
                 </div>
 
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-ink">
+                    Şifre{" "}
+                    {tab === "kayit" && (
+                      <span className="font-normal text-faint">(en az 6 karakter)</span>
+                    )}
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={tab === "kayit" ? "En az 6 karakter" : "Şifreni gir"}
+                    className="w-full rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15px] text-ink outline-none transition-colors focus:border-primary/40"
+                  />
+                  {tab === "kayit" && password.length > 0 && password.length < 6 && (
+                    <div className="mt-2 text-[13px]" style={{ color: "#eb8a4a" }}>
+                      En az 6 karakter olmalı.
+                    </div>
+                  )}
+                </div>
+
                 {error && (
                   <div className="rounded-xl bg-red-50 px-4 py-3 text-[14px] font-medium text-red-600">
                     {error}
@@ -300,6 +355,14 @@ export default function GirisPage() {
                       : "Giriş yap"}
                 </button>
 
+                {tab === "giris" && (
+                  <div className="text-center">
+                    <Link href="/sifre-sifirla" className="text-[13px] font-medium text-primary transition-colors hover:text-primary/80">
+                      Şifremi unuttum
+                    </Link>
+                  </div>
+                )}
+
                 <p className="text-center text-[12.5px] leading-normal text-faint2">
                   🔒 E-postan tek yönlü şifrelenerek saklanır. Takma adınla eşleştirilemez.
                 </p>
@@ -309,7 +372,7 @@ export default function GirisPage() {
                 <div className="mt-5 text-center">
                   <div className="mb-2.5 text-[12.5px] text-faint2">İlham lazımsa, boşta olanlardan:</div>
                   <div className="flex flex-wrap justify-center gap-2">
-                    {POOL.slice(0, 4).map((name) => (
+                    {showcase.map((name) => (
                       <button
                         key={name}
                         onClick={() => setNick(name)}

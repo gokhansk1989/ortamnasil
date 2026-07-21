@@ -82,10 +82,11 @@ model User {
 // E-posta ↔ nick bağını kasıtlı zayıflatan ayrı tablo.
 // emailHash = HMAC(email, PEPPER); düz e-posta hiçbir yerde tutulmaz.
 model AuthCredential {
-  id        String   @id @default(cuid())
-  emailHash String   @unique
-  userId    String   @unique
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  emailHash    String   @unique
+  passwordHash String
+  userId       String   @unique
+  createdAt    DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

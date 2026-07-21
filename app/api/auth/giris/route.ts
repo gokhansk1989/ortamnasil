@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { setSessionCookie } from "@/lib/session";
 import { createHmac } from "crypto";
+import bcrypt from "bcryptjs";
 
 const AUTH_PEPPER = process.env.AUTH_PEPPER!;
 if (!process.env.AUTH_PEPPER) throw new Error("AUTH_PEPPER is required");
@@ -12,10 +13,10 @@ function hashEmail(email: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json();
+    const { email, password } = await req.json();
 
-    if (!email) {
-      return NextResponse.json({ error: "E-posta gerekli" }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json({ error: "E-posta ve şifre gerekli" }, { status: 400 });
     }
 
     const emailHash = hashEmail(email);
@@ -25,8 +26,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (!credential) {
-      await new Promise((r) => setTimeout(r, 300));
-      return NextResponse.json({ error: "Giriş bilgileri hatalı" }, { status: 401 });
+      await bcrypt.hash("dummy", 12);
+      return NextResponse.json({ error: "E-posta veya şifre hatalı" }, { status: 401 });
+    }
+
+    const valid = await bcrypt.compare(password, credential.passwordHash);
+    if (!valid) {
+      return NextResponse.json({ error: "E-posta veya şifre hatalı" }, { status: 401 });
     }
 
     if (!credential.user.emailVerified) {

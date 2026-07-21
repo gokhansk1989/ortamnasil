@@ -8,9 +8,11 @@ import { LogoFull } from "@/components/Logo";
 import { TypewriterHero } from "@/components/TypewriterHero";
 import { EmojiRain } from "@/components/EmojiRain";
 import { MarqueeTicker } from "@/components/MarqueeTicker";
-import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { LiveStats } from "@/components/LiveStats";
+import { LiveIndicator } from "@/components/LiveIndicator";
 import { StaggerCards } from "@/components/StaggerCards";
-import { ticker, stats } from "@/lib/data";
+import { ticker } from "@/lib/data";
+import { STATS } from "@/lib/dorms";
 
 const steps = [
   {
@@ -49,13 +51,10 @@ export default function HomePage() {
             <LogoFull />
           </div>
 
-          <div className="mb-5 inline-flex items-center gap-2 rounded-pill bg-surface px-5 py-2 text-[13px] font-semibold text-primary">
-            <span className="h-2 w-2 rounded-full bg-light-green animate-blink" />
-            Şu an 3 kişi bir yerlerde yorum yazıyor
-          </div>
+          <LiveIndicator />
 
-          <h1 className="mb-4 text-[52px] font-bold leading-[1.08] tracking-[-1.5px] text-ink max-md:text-[36px]">
-            Yurt nasıl,{" "}
+          <h1 className="mb-4 text-[52px] font-bold leading-[1.08] tracking-[-1.5px] max-md:text-[36px]">
+            <span style={{ color: "#3a3a3a" }}>Ortam nasıl,</span>{" "}
             <TypewriterHero />
           </h1>
           <p className="mx-auto mb-9 max-w-[520px] text-lg leading-relaxed text-muted">
@@ -103,18 +102,7 @@ export default function HomePage() {
       </section>
 
       {/* İSTATİSTİK ŞERİDİ */}
-      <section className="flex justify-center gap-16 px-16 pb-16 text-center max-md:flex-wrap max-md:gap-8 max-md:px-5">
-        {stats.map((s, i) => (
-          <div key={i} className="flex items-stretch gap-16 max-md:gap-8">
-            {i > 0 && <div className="w-px bg-line max-md:hidden" />}
-            <AnimatedCounter
-              value={s.value}
-              label={s.label}
-              highlight={s.highlight}
-            />
-          </div>
-        ))}
-      </section>
+      <LiveStats dormCount={STATS.totalDorms.toLocaleString("tr")} />
 
       <WeeklyDorms />
 

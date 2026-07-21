@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+
+export const metadata: Metadata = {
+  title: "Topluluk Kuralları",
+  description:
+    "OrtamNasıl? topluluk kuralları. Anonim değerlendirmelerde uyulması gereken kurallar ve moderasyon politikası.",
+  alternates: {
+    canonical: "https://www.ortamnasil.com/kurallar",
+  },
+};
 
 const RULES = [
   {

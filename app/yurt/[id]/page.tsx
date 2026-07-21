@@ -1,15 +1,53 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { DormReviews } from "@/components/DormReviews";
 import { getDormProfile } from "@/lib/directory";
 import { LIGHTS } from "@/lib/lights";
 
+export function generateMetadata({ params }: { params: { id: string } }): Metadata {
+  const c = getDormProfile(params.id);
+  const title = `${c.name} — Yurt Değerlendirme`;
+  const description = `${c.name} hakkında anonim öğrenci yorumları. ${c.meta}. Yemek, temizlik, internet, giriş saati ve daha fazlası.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `https://www.ortamnasil.com/yurt/${params.id}`,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: `https://www.ortamnasil.com/yurt/${params.id}`,
+    },
+  };
+}
+
 export default function DormPage({ params }: { params: { id: string } }) {
   const c = getDormProfile(params.id);
   const light = LIGHTS[c.light];
 
+  const dormJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LodgingBusiness",
+    name: c.name,
+    description: `${c.name} — ${c.meta}`,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: c.quickFacts.find((f) => f.k === "Şehir")?.v,
+      addressCountry: "TR",
+    },
+    url: `https://www.ortamnasil.com/yurt/${params.id}`,
+  };
+
   return (
     <div className="min-h-screen bg-paper">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(dormJsonLd) }}
+      />
       <Header />
       <div className="mx-auto max-w-[1100px] px-8 pb-20 pt-10 max-md:px-5">
         {/* Breadcrumb */}

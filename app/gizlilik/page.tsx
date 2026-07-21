@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+
+export const metadata: Metadata = {
+  title: "Gizlilik Politikası",
+  description:
+    "OrtamNasıl? gizlilik politikası. Kişisel verilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu öğrenin.",
+  alternates: {
+    canonical: "https://www.ortamnasil.com/gizlilik",
+  },
+};
 
 export default function GizlilikPage() {
   return (

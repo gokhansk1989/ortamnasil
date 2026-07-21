@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+
+export const metadata: Metadata = {
+  title: "İletişim",
+  description:
+    "OrtamNasıl? ile iletişime geç. Soru, öneri, hak talebi veya kural ihlali bildirimi için bize ulaş.",
+  alternates: {
+    canonical: "https://www.ortamnasil.com/iletisim",
+  },
+};
 
 export default function IletisimPage() {
   return (

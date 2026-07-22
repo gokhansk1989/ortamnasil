@@ -47,7 +47,7 @@ export function Header() {
             </Link>
             <button
               onClick={handleLogout}
-              className="text-[13px] text-faint hover:text-primary max-md:hidden"
+              className="text-[13px] text-faint hover:text-primary"
             >
               Çıkış
             </button>

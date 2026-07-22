@@ -28,9 +28,9 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-paper/90 px-16 py-4 backdrop-blur-md max-md:px-5">
+    <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-paper/90 px-16 py-4 backdrop-blur-md max-md:px-4">
       <Logo />
-      <nav className="flex items-center gap-6 text-[15px] text-body max-md:gap-3">
+      <nav className="flex items-center gap-6 text-[15px] text-body max-md:gap-2">
         <Link href="/yurtlar" className="text-body hover:text-primary max-md:hidden">
           Yurtlar
         </Link>
@@ -41,13 +41,13 @@ export function Header() {
           <>
             <Link
               href="/profil"
-              className="rounded-pill border border-line bg-surface px-3.5 py-1.5 font-mono text-[13px] text-muted hover:border-primary/30 hover:bg-surface"
+              className="rounded-pill border border-line bg-surface px-3.5 py-1.5 font-mono text-[13px] text-muted hover:border-primary/30 hover:bg-surface max-md:px-2.5 max-md:text-[11px]"
             >
               🥸 {user.nick}
             </Link>
             <button
               onClick={handleLogout}
-              className="text-[13px] text-faint hover:text-primary"
+              className="text-[13px] text-faint hover:text-primary max-md:text-[11px]"
             >
               Çıkış
             </button>
@@ -55,14 +55,14 @@ export function Header() {
         ) : (
           <Link
             href="/giris"
-            className="rounded-pill border border-line bg-surface px-3.5 py-1.5 text-[13px] font-semibold text-muted hover:border-primary/30"
+            className="rounded-pill border border-line bg-surface px-3.5 py-1.5 text-[13px] font-semibold text-muted hover:border-primary/30 max-md:px-2.5 max-md:py-1 max-md:text-[11px]"
           >
             Giriş yap
           </Link>
         )}
         <Link
           href="/yurtlar"
-          className="gradient-pink rounded-pill px-6 py-2.5 font-semibold text-white shadow-glow transition-transform hover:scale-105"
+          className="gradient-pink rounded-pill px-6 py-2.5 font-semibold text-white shadow-glow transition-transform hover:scale-105 max-md:px-3.5 max-md:py-1.5 max-md:text-[12px]"
         >
           Yorum yaz
         </Link>

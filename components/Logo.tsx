@@ -12,7 +12,7 @@ export function Logo({ href = "/", size = "sm" }: { href?: string; size?: "sm" |
         height={dim}
         className="rounded-full"
       />
-      <span className="text-xl font-bold">
+      <span className="text-xl font-bold max-md:text-base">
         Ortam<span className="text-primary">Nasıl?</span>
       </span>
     </Link>

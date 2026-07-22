@@ -11,9 +11,8 @@ interface StatData {
 
 const FALLBACK: StatData[] = [
   { value: "2.471", label: "yurt dosyalandı" },
-  { value: "0", label: "anonim itiraf" },
+  { value: "0", label: "anonim değerlendirme" },
   { value: "0", label: "\"uzak dur\" verildi" },
-  { value: "0", label: "gerçek isim sızdırıldı", highlight: true },
 ];
 
 export function LiveStats({ dormCount }: { dormCount: string }) {
@@ -29,9 +28,8 @@ export function LiveStats({ dormCount }: { dormCount: string }) {
         if (!data) return;
         setStats([
           { value: dormCount, label: "yurt dosyalandı" },
-          { value: data.reviewCount.toLocaleString("tr"), label: "anonim itiraf" },
+          { value: data.reviewCount.toLocaleString("tr"), label: "anonim değerlendirme" },
           { value: data.redCount.toLocaleString("tr"), label: "\"uzak dur\" verildi" },
-          { value: "0", label: "gerçek isim sızdırıldı", highlight: true },
         ]);
       })
       .catch(() => {});

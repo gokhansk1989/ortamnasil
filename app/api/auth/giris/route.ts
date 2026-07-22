@@ -43,6 +43,13 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
+    if (credential.mustChangePassword) {
+      return NextResponse.json({
+        mustChangePassword: true,
+        message: "Geçici şifreyle giriş yapıldı. Yeni şifreni belirle.",
+      });
+    }
+
     const res = NextResponse.json({
       id: credential.user.id,
       nick: credential.user.nick,

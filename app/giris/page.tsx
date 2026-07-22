@@ -39,7 +39,7 @@ const STATIC_SHOWCASE = [
 ];
 
 type Tab = "kayit" | "giris";
-type Step = "form" | "verify";
+type Step = "form" | "verify" | "change-password";
 
 export default function GirisPage() {
   const router = useRouter();
@@ -50,6 +50,8 @@ export default function GirisPage() {
   const [password, setPassword] = useState("");
   const [userId, setUserId] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [newPassword, setNewPassword] = useState("");
+  const [tempPassword, setTempPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -141,6 +143,14 @@ export default function GirisPage() {
         setError(data.error || "Bir hata oluştu");
         return;
       }
+      if (data.mustChangePassword) {
+        setTempPassword(password);
+        setPassword("");
+        setStep("change-password");
+        setError("");
+        setSuccess("Geçici şifreyle giriş yapıldı. Yeni şifreni belirle.");
+        return;
+      }
       setSuccess(`Tekrar hoş geldin ${data.nick}!`);
       setTimeout(() => router.push("/"), 1200);
     } catch {
@@ -168,6 +178,33 @@ export default function GirisPage() {
       }
       setSuccess(`Hoş geldin ${data.nick}!`);
       setTimeout(() => router.push("/"), 1200);
+    } catch {
+      setError("Sunucuya ulaşılamadı");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleChangePassword() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/sifre-degistir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, currentPassword: tempPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Bir hata oluştu");
+        return;
+      }
+      setStep("form");
+      setTab("giris");
+      setPassword("");
+      setNewPassword("");
+      setTempPassword("");
+      setSuccess("Şifren güncellendi! Yeni şifrenle giriş yapabilirsin.");
     } catch {
       setError("Sunucuya ulaşılamadı");
     } finally {
@@ -230,7 +267,7 @@ export default function GirisPage() {
 
       <div className="flex flex-1 items-center justify-center px-8 pb-16 pt-6 max-md:px-5">
         <div className="w-[520px] max-w-full">
-          {step === "form" ? (
+          {step === "form" && (
             <>
               <div className="mb-7 text-center">
                 <div className="mb-3 text-[44px]">🥸</div>
@@ -385,7 +422,9 @@ export default function GirisPage() {
                 </div>
               )}
             </>
-          ) : (
+          )}
+
+          {step === "verify" && (
             <>
               <div className="mb-7 text-center">
                 <div className="mb-3 text-[44px]">📬</div>
@@ -461,6 +500,60 @@ export default function GirisPage() {
                 <p className="text-center text-[12.5px] leading-normal text-faint2">
                   Spam klasörünü kontrol etmeyi unutma.
                 </p>
+              </div>
+            </>
+          )}
+
+          {step === "change-password" && (
+            <>
+              <div className="mb-7 text-center">
+                <div className="mb-3 text-[44px]">🔐</div>
+                <h1 className="mb-2.5 text-[32px] font-bold tracking-[-.5px] text-ink">
+                  Yeni şifreni belirle
+                </h1>
+                <p className="text-[15.5px] leading-relaxed text-muted">
+                  Geçici şifreyle giriş yaptın. Devam etmek için yeni bir şifre oluştur.
+                </p>
+              </div>
+
+              <div className="grid gap-5 rounded-[22px] border border-line bg-card px-9 py-8 shadow-lg max-md:px-6">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-ink">
+                    Yeni şifre <span className="font-normal text-faint">(en az 6 karakter)</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Yeni şifreni belirle"
+                    className="w-full rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15px] text-ink outline-none transition-colors focus:border-primary/40"
+                  />
+                  {newPassword.length > 0 && newPassword.length < 6 && (
+                    <div className="mt-2 text-[13px]" style={{ color: "#eb8a4a" }}>
+                      En az 6 karakter olmalı.
+                    </div>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="rounded-xl bg-red-50 px-4 py-3 text-[14px] font-medium text-red-600">
+                    {error}
+                  </div>
+                )}
+
+                {success && (
+                  <div className="rounded-xl bg-green-50 px-4 py-3 text-[14px] font-medium text-green-700">
+                    {success}
+                  </div>
+                )}
+
+                <button
+                  onClick={handleChangePassword}
+                  disabled={loading || newPassword.length < 6}
+                  className="gradient-pink rounded-xl py-[15px] text-base font-bold text-white shadow-glow transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+                >
+                  {loading ? "Kaydediliyor..." : "Şifremi güncelle"}
+                </button>
               </div>
             </>
           )}

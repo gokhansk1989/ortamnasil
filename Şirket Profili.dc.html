@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#fafcfb; font-family:'Space Grotesk',sans-serif; }
+a { color:#0d7a6f; text-decoration:none; } a:hover { color:#0a5c54; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#fafcfb;" data-screen-label="Şirket Profili">
+<header style="display:flex; align-items:center; justify-content:space-between; padding:20px 64px; border-bottom:1px solid #e3ebe8; background:#fafcfb; position:sticky; top:0; z-index:10;">
+  <a href="OrtamNasıl - Ana Sayfa.dc.html" style="display:flex; align-items:center; gap:10px;">
+    <div style="display:flex; gap:4px;">
+      <span style="width:10px; height:10px; border-radius:50%; background:#e05d4b;"></span>
+      <span style="width:10px; height:10px; border-radius:50%; background:#e8b93c;"></span>
+      <span style="width:10px; height:10px; border-radius:50%; background:#2eb586; animation:blink 2s infinite;"></span>
+    </div>
+    <span style="font-weight:700; font-size:20px; color:#12312c;">OrtamNasıl?</span>
+  </a>
+  <nav style="display:flex; gap:28px; align-items:center; font-size:15px; color:#3d4a47;">
+    <a href="Şirketler.dc.html" style="color:#3d4a47;">Şirketler</a>
+    <a href="Profil.dc.html" style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#7a8a86; border:1px solid #e3ebe8; padding:6px 12px; border-radius:999px;">🥸 SinirliPenguen42</a>
+    <a href="Anket.dc.html" style="background:#0d7a6f; color:#fff; padding:10px 20px; border-radius:10px; font-weight:600;">Yorum yaz</a>
+  </nav>
+</header>
+
+<div style="max-width:1100px; margin:0 auto; padding:40px 32px 80px;">
+  <div style="font-size:13.5px; color:#7a8a86; margin-bottom:24px;"><a href="Şirketler.dc.html">Şirketler</a> / Teknoloji / <span style="color:#12312c;">Vizyoner Yazılım</span></div>
+
+  <!-- BAŞLIK KARTI -->
+  <div style="display:grid; grid-template-columns:1fr 340px; gap:20px; margin-bottom:20px;">
+    <div style="background:#fff; border:1px solid #e3ebe8; border-radius:16px; padding:32px;">
+      <div style="display:flex; align-items:flex-start; gap:20px;">
+        <div style="width:72px; height:72px; border-radius:16px; background:#e8f3f0; display:grid; place-items:center; font-weight:700; color:#0d7a6f; font-size:30px;">V</div>
+        <div style="flex:1;">
+          <h1 style="margin:0 0 6px; font-size:30px; color:#12312c; letter-spacing:-.5px;">Vizyoner Yazılım</h1>
+          <div style="font-size:14.5px; color:#7a8a86;">Teknoloji · İstanbul · 80-150 çalışan · 42 yorum</div>
+          <div style="display:flex; gap:10px; margin-top:14px;">
+            <span style="display:inline-flex; align-items:center; gap:6px; font-size:13px; color:#0d7a6f; border:1px solid #cfdcd8; padding:6px 14px; border-radius:999px; background:#fff;">🌐 vizyoneryazilim.com</span>
+            <span style="display:inline-flex; align-items:center; gap:6px; font-size:13px; color:#0d7a6f; border:1px solid #cfdcd8; padding:6px 14px; border-radius:999px; background:#fff;">in/ linkedin.com/company/vizyoner</span>
+          </div>
+          <div style="font-size:12.5px; color:#7a8a86; margin-top:10px; font-family:'IBM Plex Mono',monospace;">kayıt #0042 · KurdeleKesen: GerginKaplumbağa 🎀</div>
+        </div>
+      </div>
+    </div>
+    <!-- SKOR KARTI -->
+    <div style="background:#12312c; border-radius:16px; padding:28px; color:#fff; display:flex; flex-direction:column; justify-content:center; text-align:center;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#8ff5d2; letter-spacing:1px; margin-bottom:14px;">ORTAM SKORU</div>
+      <div style="display:flex; justify-content:center; gap:10px; margin-bottom:16px;">
+        <span style="width:18px; height:18px; border-radius:50%; background:rgba(224,93,75,.25);"></span>
+        <span style="width:18px; height:18px; border-radius:50%; background:rgba(235,138,74,.25);"></span>
+        <span style="width:18px; height:18px; border-radius:50%; background:rgba(232,185,60,.25);"></span>
+        <span style="width:18px; height:18px; border-radius:50%; background:#2eb586; box-shadow:0 0 18px rgba(46,181,134,.8); animation:blink 2.4s infinite;"></span>
+      </div>
+      <div style="font-size:26px; font-weight:700; color:#5ce6ae;">Kapağı at</div>
+      <div style="font-size:13px; color:#9ec4bb; margin-top:6px;">42 anonim çalışan onaylıyor. Hemen, koşarak.</div>
+    </div>
+  </div>
+
+  <!-- KATEGORİ KIRILIMI -->
+  <div style="display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;">
+    <div>
+      <div style="background:#fff; border:1px solid #e3ebe8; border-radius:16px; padding:28px 32px; margin-bottom:20px;">
+        <h2 style="margin:0 0 22px; font-size:19px; color:#12312c;">Kategori kırılımı</h2>
+        <div style="display:grid; gap:16px;">
+          <sc-for list="{{ cats }}" as="k" hint-placeholder-count="6">
+            <div style="display:grid; grid-template-columns:180px 1fr 130px; gap:16px; align-items:center;">
+              <div style="font-size:14.5px; color:#3d4a47;">{{ k.name }}</div>
+              <div style="height:10px; background:#eef1f0; border-radius:999px; overflow:hidden;">
+                <div style="height:100%; border-radius:999px; background:{{ k.color }}; width:{{ k.w }};"></div>
+              </div>
+              <div style="font-size:12.5px; font-weight:600; color:{{ k.txt }}; text-align:right;">{{ k.verdict }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:20px; padding-top:16px; border-top:1px dashed #e3ebe8; font-size:13px; color:#7a8a86;">Yaş ortalaması: <strong style="color:#12312c;">27-33</strong> — ofis çalma listesinde TikTok hitleri ile 90'lar barışık yaşıyor.</div>
+      </div>
+
+      <!-- YORUMLAR -->
+      <!-- IŞIK DAĞILIMI -->
+      <div style="background:#fff; border:1px solid #e3ebe8; border-radius:16px; padding:28px 32px; margin-bottom:20px;">
+        <h2 style="margin:0 0 20px; font-size:19px; color:#12312c;">Işık dağılımı <span style="font-size:13px; font-weight:400; color:#7a8a86;">— 42 anket sonucu</span></h2>
+        <div style="display:grid; gap:12px;">
+          <sc-for list="{{ dist }}" as="d" hint-placeholder-count="5">
+            <div style="display:grid; grid-template-columns:150px 1fr 44px; gap:14px; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#3d4a47;"><span style="width:9px; height:9px; border-radius:50%; background:{{ d.dot }}; flex-shrink:0;"></span>{{ d.name }}</div>
+              <div style="height:22px; background:#eef1f0; border-radius:6px; overflow:hidden;"><div style="height:100%; background:{{ d.dot }}; width:{{ d.w }}; border-radius:6px;"></div></div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#7a8a86; text-align:right;">{{ d.count }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:18px; padding-top:14px; border-top:1px dashed #e3ebe8; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#7a8a86;">
+          <span>Son 6 ayda trend: <strong style="color:#177a52;">yeşilleşiyor ↗</strong></span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:12px;">son güncelleme: 2 gün önce</span>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px;">
+        <h2 style="margin:0; font-size:19px; color:#12312c;">Anonim itiraflar</h2>
+        <div style="display:flex; gap:8px; font-size:13px;">
+          <span style="background:#12312c; color:#fff; padding:6px 14px; border-radius:999px; cursor:pointer;">En yeni</span>
+          <span style="background:#fff; border:1px solid #e3ebe8; color:#3d4a47; padding:6px 14px; border-radius:999px; cursor:pointer;">En faydalı</span>
+        </div>
+      </div>
+      <div style="display:grid; gap:14px;">
+        <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="3">
+          <div style="background:#fff; border:1px solid #e3ebe8; border-radius:14px; padding:24px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+              <div style="width:34px; height:34px; border-radius:50%; background:{{ r.avBg }}; display:grid; place-items:center; font-size:16px;">{{ r.emoji }}</div>
+              <div style="flex:1;">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:13.5px; color:#12312c; font-weight:500;">{{ r.author }}</span>
+                <span style="font-size:12.5px; color:#7a8a86;"> · {{ r.role }} · {{ r.when }}</span>
+              </div>
+              <span style="display:inline-flex; align-items:center; gap:6px; background:{{ r.badgeBg }}; color:{{ r.badgeFg }}; font-size:12.5px; font-weight:600; padding:5px 12px; border-radius:999px;"><span style="width:7px; height:7px; border-radius:50%; background:{{ r.dot }};"></span>{{ r.label }}</span>
+            </div>
+            <p style="margin:0; font-size:15px; color:#3d4a47; line-height:1.6;">{{ r.text }}</p>
+            <div style="display:flex; gap:16px; margin-top:14px; font-size:13px; color:#7a8a86;">
+              <span onClick="{{ r.vote }}" style="cursor:pointer; color:{{ r.voteColor }};" style-hover="color:#0d7a6f;">👍 Faydalı ({{ r.up }})</span>
+              <span style="cursor:pointer;" style-hover="color:#0d7a6f;">Aynen yaşadım ({{ r.same }})</span>
+              <span style="cursor:pointer;" style-hover="color:#b23a28;">Bildir</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="text-align:center; margin-top:20px;">
+        <span style="display:inline-block; background:#fff; border:1px solid #cfdcd8; color:#0d7a6f; font-size:14px; font-weight:600; padding:12px 28px; border-radius:12px; cursor:pointer;" style-hover="background:#e8f3f0;">39 itiraf daha yükle</span>
+      </div>
+    </div>
+
+    <!-- SAĞ SÜTUN -->
+    <div style="display:grid; gap:20px;">
+      <div style="background:#fff; border:1.5px dashed #9ec4bb; border-radius:16px; padding:26px; text-align:center;">
+        <div style="font-size:15px; font-weight:600; color:#12312c; margin-bottom:6px;">Burada çalıştın mı?</div>
+        <p style="margin:0 0 16px; font-size:13.5px; color:#5a6a66; line-height:1.5;">3 dakikalık anket. İK asla bilmeyecek.</p>
+        <a href="Anket.dc.html" style="display:block; background:#0d7a6f; color:#fff; padding:13px; border-radius:10px; font-weight:600; font-size:15px;" style-hover="background:#0a5c54;">Anonim değerlendir</a>
+      </div>
+      <div style="background:#fff; border:1px solid #e3ebe8; border-radius:16px; padding:26px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#7a8a86; letter-spacing:1px; margin-bottom:14px;">HIZLI BİLGİLER</div>
+        <div style="display:grid; gap:12px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><span style="color:#7a8a86;">Mesai sonrası mail</span><span style="color:#177a52; font-weight:600;">Nadiren</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:#7a8a86;">Uzaktan çalışma</span><span style="color:#177a52; font-weight:600;">Hibrit (gerçek)</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:#7a8a86;">Zam dönemi morali</span><span style="color:#96690f; font-weight:600;">Karışık</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:#7a8a86;">Mülakat aşaması</span><span style="color:#177a52; font-weight:600;">3 (insani)</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:#7a8a86;">Çıkışta veda pastası</span><span style="color:#177a52; font-weight:600;">Var 🎂</span></div>
+        </div>
+      </div>
+      <div style="background:#eef5f2; border-radius:16px; padding:22px; font-size:13px; color:#5a6a66; line-height:1.55;">
+        <strong style="color:#12312c;">Benzer ışıklılar:</strong> <a href="#">Sağlam Finans</a>, <a href="#">Derin Veri Labs</a>, <a href="#">Kuzey Oyun Stüdyosu</a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { voted: {} };
+  renderVals() {
+    const g = "#2eb586", y = "#e8b93c", o = "#eb8a4a";
+    const voted = this.state.voted;
+    return {
+      dist: [
+        { name:"Kapağı at", dot:"#2eb586", w:"62%", count:26 },
+        { name:"Para için değer", dot:"#e8b93c", w:"21%", count:9 },
+        { name:"Girmeden düşün", dot:"#eb8a4a", w:"10%", count:4 },
+        { name:"Kaçarak uzaklaş", dot:"#e05d4b", w:"5%", count:2 },
+        { name:"Pas geçti", dot:"#b9c9c4", w:"2%", count:1 },
+      ],
+      cats: [
+        { name:"Maaş / yan haklar", w:"72%", color:g, txt:"#177a52", verdict:"Gülümseten" },
+        { name:"Yönetim", w:"80%", color:g, txt:"#177a52", verdict:"İnsan gibi" },
+        { name:"İş-yaşam dengesi", w:"88%", color:g, txt:"#177a52", verdict:"Efsane" },
+        { name:"Ofis / uzaktan", w:"76%", color:g, txt:"#177a52", verdict:"Hibrit, gerçekten" },
+        { name:"Kariyer gelişimi", w:"55%", color:y, txt:"#96690f", verdict:"Sabır ister" },
+        { name:"Kültür / sosyal", w:"82%", color:g, txt:"#177a52", verdict:"Samimi" },
+        { name:"Mülakat süreci", w:"70%", color:g, txt:"#177a52", verdict:"3 aşama, insani" },
+        { name:"İşten çıkış deneyimi", w:"64%", color:y, txt:"#96690f", verdict:"Pastalı veda" },
+      ],
+      reviews: this.reviewData.map((r, i) => ({
+        ...r,
+        up: r.up + (voted[i] ? 1 : 0),
+        voteColor: voted[i] ? "#0d7a6f" : "#7a8a86",
+        vote: () => this.setState(s => ({ voted: { ...s.voted, [i]: !s.voted[i] } })),
+      })),
+    };
+  }
+  reviewData = [
+        { author:"GerginKaplumbağa", emoji:"🐢", avBg:"#e8f3f0", role:"Yazılım · eski çalışan", when:"2 gün önce",
+          label:"Kapağı at", badgeBg:"#e7f6ef", badgeFg:"#177a52", dot:"#2eb586", up:24, same:11,
+          text:"Mesai bitince kimse sana ters ters bakmıyor. Denedim, çıktım, kimse aramadı. Yıllık izin isterken suçlu hissettirilmiyorsun, bu sektörde peri masalı." },
+        { author:"UykusuzKirpi", emoji:"🦔", avBg:"#fdf3e4", role:"Ürün · mevcut çalışan", when:"1 hafta önce",
+          label:"Kapağı at", badgeBg:"#e7f6ef", badgeFg:"#177a52", dot:"#2eb586", up:17, same:6,
+          text:"Yöneticim hata yapınca 'benim hatam' dedi. Önce kayıt cihazı aradım, sonra gerçek olduğuna inandım. Zam dönemi biraz sancılı ama pazarlık edilebiliyor." },
+        { author:"SessizFlamingoX", emoji:"🦩", avBg:"#fcebe8", role:"Tasarım · mülakat deneyimi", when:"3 hafta önce",
+          label:"Para için değer", badgeBg:"#fbf1db", badgeFg:"#96690f", dot:"#e8b93c", up:9, same:3,
+          text:"Mülakat 3 aşamaydı ve kimse 'kendini 5 yıl sonra nerede görüyorsun' demedi. Teklif ortalama geldi ama yan haklar açığı kapatıyor. Pazarlık payı bırakıyorlar, isteyin." },
+  ];
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+// OrtamNasıl? (Yurt) — veri modeli
+// Gizlilik notu: Ürünün temel vaadi "gerçek isim bizde bile yok".
+// E-posta ASLA düz metin saklanmaz; sadece peppered hash tutulur ve kimlik
+// (nick) ile giriş bilgisi (emailHash) ayrı tablolarda durur. İtiraf/anket
+// kayıtlarında sadece userId geçer, e-posta hiçbir yerde yer almaz.
+//
+// Yasal not (Türkiye): 18+ kapısı zorunlu (KVKK çocuk verisi); yer sağlayıcı
+// trafik logları yasal süre saklanır ama içerikle ilişkilendirilmez.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enums ------------------------------------------------------------------
+
+enum Light {
+  GREEN
+  YELLOW
+  ORANGE
+  RED
+  GRAY
+}
+
+enum DormType {
+  KYK // devlet (GSB/KYK)
+  PRIVATE // özel yurt
+  APART // öğrenci apartı
+}
+
+enum DormGender {
+  MALE
+  FEMALE
+  MIXED
+}
+
+// İtiraf sahibinin yurtla ilişkisi.
+enum Relation {
+  CURRENT_RESIDENT // Şu an kalıyorum
+  FORMER_RESIDENT // Eskiden kaldım
+  SHORT_STAY // Kısa süre kaldım
+  VISITED // Gezip gördüm
+}
+
+enum ReportReason {
+  NAME_DISCLOSURE // İsim ifşası (personel/öğrenci)
+  PROFANITY // Küfür / hakaret
+  SPAM
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REMOVED
+  EDIT_REQUESTED
+}
+
+// --- Kimlik -----------------------------------------------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  nick          String   @unique
+  isAdult       Boolean  @default(false)
+  emailVerified Boolean  @default(false)
+  frozen        Boolean  @default(false)
+  frozenAt      DateTime?
+  createdAt     DateTime @default(now())
+
+  remindersSent Int      @default(0)
+
+  dorms              Dorm[]              @relation("CreatedDorms")
+  surveys            Survey[]
+  reviews            Review[]
+  votes              Vote[]
+  agrees             Agree[]
+  badges             UserBadge[]
+  reports            Report[]
+  credential         AuthCredential?
+  verification       EmailVerification?
+  pushSubscriptions  PushSubscription[]
+}
+
+// E-posta ↔ nick bağını kasıtlı zayıflatan ayrı tablo.
+// emailHash = HMAC(email, PEPPER); düz e-posta hiçbir yerde tutulmaz.
+model AuthCredential {
+  id                 String   @id @default(cuid())
+  emailHash          String   @unique
+  passwordHash       String
+  mustChangePassword Boolean  @default(false)
+  userId             String   @unique
+  createdAt          DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdminOtp {
+  id        String   @id @default(cuid())
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Badge {
+  id    String      @id @default(cuid())
+  slug  String      @unique // "kurdele-kesen", "guvenilir-muhbir" ...
+  label String
+  emoji String
+  users UserBadge[]
+}
+
+model UserBadge {
+  userId    String
+  badgeId   String
+  count     Int      @default(1) // "🎀 KurdeleKesen ×2"
+  grantedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+}
+
+// --- Yurt -------------------------------------------------------------------
+
+model Dorm {
+  id         String      @id @default(cuid())
+  recordNo   Int         @unique @default(autoincrement()) // "kayıt #0042"
+  name       String
+  type       DormType
+  gender     DormGender  @default(MIXED)
+  city       String
+  district   String?
+  nearCampus String? // "İTÜ Ayazağa" — isim benzerliğini çözer
+  mapsUrl    String? // Google Maps linki (kimlik doğrulama)
+  website    String?
+  blurb      String?
+  // Anketlerden türetilen önbelleklenmiş ışık (companyLight); kaynak doğruluk
+  // her zaman surveys tablosudur.
+  light      Light       @default(GRAY)
+  creatorId  String
+  createdAt  DateTime    @default(now())
+
+  creator User     @relation("CreatedDorms", fields: [creatorId], references: [id])
+  surveys Survey[]
+  reviews Review[]
+
+  @@index([type])
+  @@index([city])
+  @@index([name])
+}
+
+model Survey {
+  id           String   @id @default(cuid())
+  dormId       String
+  userId       String
+  answers      Int[] // 9 cevap: 1 = A, 0 = B, pas kaydedilmez (dizi kısalır)
+  ratio        Float? // ratioOf(answers); pas-only ise null
+  light        Light // scoreSurvey(answers)
+  period       String? // "2024-2025 Güz", "2023-2024 Bahar" vb.
+  comment      String? // opsiyonel serbest metin yorum (moderasyondan geçer)
+  helpfulCount Int      @default(0)
+  sameCount    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  dorm   Dorm    @relation(fields: [dormId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes  Vote[]
+  agrees Agree[]
+
+  @@unique([dormId, userId]) // bir kullanıcı bir yurda tek anket
+  @@index([dormId])
+}
+
+model Review {
+  id           String           @id @default(cuid())
+  recordNo     Int              @unique @default(autoincrement()) // "itiraf #8918"
+  dormId       String
+  userId       String
+  title        String
+  text         String // 40–600 karakter; sınır API'de doğrulanır
+  relation     Relation
+  period       String? // "2024-2025 Güz" vb.
+  light        Light // anketten taşınan ışık
+  helpfulCount Int              @default(0)
+  sameCount    Int              @default(0)
+  status       ModerationStatus @default(PENDING)
+  createdAt    DateTime         @default(now())
+
+  dorm    Dorm     @relation(fields: [dormId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes   Vote[]
+  agrees  Agree[]
+  reports Report[]
+
+  @@index([dormId, createdAt])
+  @@index([dormId, helpfulCount])
+}
+
+// "👍 Faydalı" toggle — kullanıcı başına tek oy (spam/şişirmeye karşı).
+model Vote {
+  id        String   @id @default(cuid())
+  userId    String
+  reviewId  String?
+  surveyId  String?
+  createdAt DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review? @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  survey Survey? @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+  @@unique([userId, surveyId])
+}
+
+// "🤝 Aynen yaşadım" toggle — kullanıcı başına tek.
+model Agree {
+  id        String   @id @default(cuid())
+  userId    String
+  reviewId  String?
+  surveyId  String?
+  createdAt DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review? @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  survey Survey? @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+  @@unique([userId, surveyId])
+}
+
+// --- Moderasyon -------------------------------------------------------------
+
+model Report {
+  id         String           @id @default(cuid())
+  reviewId   String
+  reporterId String
+  reason     ReportReason
+  status     ModerationStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reporter User   @relation(fields: [reporterId], references: [id])
+
+  @@unique([reviewId, reporterId])
+  @@index([status])
+}
+
+// --- Push Bildirimleri ------------------------------------------------------
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// --- İçerik (Blog + SSS) ---------------------------------------------------
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  content     String   // HTML içerik
+  category    String   @default("rehber") // rehber, haber, ipucu
+  readTime    String   @default("5 dk")
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  likeCount   Int      @default(0)
+  viewCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, publishedAt])
+  @@index([slug])
+}
+
+model FaqItem {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String   @default("platform") // platform, kyk, ozel
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, sortOrder])
+}

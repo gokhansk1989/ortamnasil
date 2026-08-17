@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { LIGHTS, type LightKey } from "@/lib/lights";
 
-type AdminView = "dashboard" | "moderation" | "reviews" | "dorms" | "users" | "blog" | "faq";
+type AdminView = "dashboard" | "moderation" | "reviews" | "surveys" | "dorms" | "users" | "blog" | "faq";
 
 const MENU = [
   { key: "dashboard" as const, icon: "📊", name: "Kumanda odası" },
   { key: "moderation" as const, icon: "🚨", name: "Moderasyon" },
   { key: "reviews" as const, icon: "💬", name: "Yorumlar" },
+  { key: "surveys" as const, icon: "📋", name: "Anketler" },
   { key: "dorms" as const, icon: "🏠", name: "Yurtlar" },
   { key: "users" as const, icon: "👥", name: "Kullanıcılar" },
   { key: "blog" as const, icon: "📝", name: "Blog" },
@@ -39,6 +40,7 @@ interface DashboardData {
     todayReviews: number;
     weeklyUsers: number;
     reviewCount: number;
+    surveyCount: number;
     redCount: number;
   };
   distribution: { light: string; count: number; pct: number }[];
@@ -187,6 +189,11 @@ export default function AdminPage() {
                     {data!.kpis.pendingReviews}
                   </span>
                 )}
+                {m.key === "surveys" && (data?.kpis?.surveyCount ?? 0) > 0 && (
+                  <span className="ml-auto font-mono text-[11.5px] text-onDarkMuted">
+                    {data!.kpis.surveyCount}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -204,6 +211,8 @@ export default function AdminPage() {
           <FaqManager />
         ) : view === "reviews" ? (
           <ReviewManager />
+        ) : view === "surveys" ? (
+          <SurveyManager />
         ) : view === "moderation" ? (
           <ModerationView queue={queue} resolve={resolve} />
         ) : (
@@ -232,7 +241,7 @@ function DashboardView({
     { label: "Bekleyen bildirimler", value: k?.pendingReports ?? 0, color: (k?.pendingReports ?? 0) > 0 ? "#b23a28" : "#12312c" },
     { label: "Onay bekleyen yorum", value: k?.pendingReviews ?? 0, color: (k?.pendingReviews ?? 0) > 0 ? "#b07d1e" : "#12312c" },
     { label: "Toplam yurt", value: k?.dormCount ?? 0, color: "#12312c" },
-    { label: "Yeni kullanıcı (7g)", value: k?.weeklyUsers ?? 0, color: "#12312c" },
+    { label: "Doldurulan anket", value: k?.surveyCount ?? 0, color: "#12312c" },
   ];
 
   return (
@@ -1607,6 +1616,230 @@ function ReviewManager() {
             );
           })}
         </div>
+      )}
+
+      {toast && <Toast message={toast} />}
+    </>
+  );
+}
+
+// ── Survey Manager ──
+
+interface SurveyItem {
+  id: string;
+  nick: string;
+  dormName: string;
+  dormCity: string;
+  light: string;
+  lightLabel: string;
+  comment: string | null;
+  period: string | null;
+  answers: number[];
+  ratio: number | null;
+  helpfulCount: number;
+  sameCount: number;
+  createdAt: string;
+}
+
+const SURVEY_TOPICS = [
+  "Yemek", "Temizlik", "İnternet", "Giriş-çıkış",
+  "Isınma", "Konum", "Yönetim", "Ortam",
+];
+
+function SurveyManager() {
+  const [surveys, setSurveys] = useState<SurveyItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [lightFilter, setLightFilter] = useState("Tümü");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState("");
+
+  useEffect(() => { loadSurveys(); }, []);
+
+  async function loadSurveys() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/anketler");
+      if (res.ok) {
+        const data = await res.json();
+        setSurveys(data.items);
+        setTotal(data.total);
+      }
+    } catch { /* */ }
+    setLoading(false);
+  }
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 3000);
+  }
+
+  async function handleDelete() {
+    if (!deleteId) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/anketler", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ surveyId: deleteId }),
+      });
+      if (res.ok) {
+        showToast("Anket silindi");
+        setSurveys((prev) => prev.filter((s) => s.id !== deleteId));
+        setTotal((t) => t - 1);
+      } else {
+        showToast("Silinemedi");
+      }
+    } catch { showToast("Hata oluştu"); }
+    setSaving(false);
+    setDeleteId(null);
+  }
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase("tr");
+    return surveys.filter(
+      (s) =>
+        (!q || s.nick.toLocaleLowerCase("tr").includes(q) || s.dormName.toLocaleLowerCase("tr").includes(q) || s.dormCity.toLocaleLowerCase("tr").includes(q)) &&
+        (lightFilter === "Tümü" || s.light === lightFilter),
+    );
+  }, [surveys, query, lightFilter]);
+
+  return (
+    <>
+      <div className="mb-6">
+        <h1 className="text-[26px] tracking-[-.4px] text-ink">
+          Anket yönetimi{" "}
+          <span className="text-[15px] font-normal text-faint">({total} anket)</span>
+        </h1>
+        <p className="mt-1 text-sm text-faint">Doldurulan tüm yurt anketleri</p>
+      </div>
+
+      <div className="mb-5 grid grid-cols-[1fr_160px] gap-3 max-md:grid-cols-1">
+        <div className="flex items-center gap-3 rounded-xl border-[1.5px] border-inputline bg-card px-4">
+          <span className="text-faint">⌕</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Kullanıcı, yurt adı veya şehir ara..."
+            className="flex-1 bg-transparent py-3 text-[15px] text-ink outline-none"
+          />
+          {query && <button onClick={() => setQuery("")} className="text-faint hover:text-ink">✕</button>}
+        </div>
+        <select
+          value={lightFilter}
+          onChange={(e) => setLightFilter(e.target.value)}
+          className="rounded-xl border-[1.5px] border-inputline bg-card px-3 py-3 text-sm text-ink outline-none"
+        >
+          <option value="Tümü">Tüm ışıklar</option>
+          <option value="GREEN">Yeşil</option>
+          <option value="YELLOW">Sarı</option>
+          <option value="ORANGE">Turuncu</option>
+          <option value="RED">Kırmızı</option>
+          <option value="GRAY">Gri</option>
+        </select>
+      </div>
+
+      {loading ? (
+        <div className="py-16 text-center text-faint animate-pulse">Yükleniyor...</div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-2xl border-[1.5px] border-dashed border-onDarkMuted bg-card p-14 text-center">
+          <div className="mb-3 text-[40px]">📋</div>
+          <div className="text-[19px] font-semibold text-ink">
+            {query || lightFilter !== "Tümü" ? "Sonuç bulunamadı" : "Henüz anket yok"}
+          </div>
+        </div>
+      ) : (
+        <div className="grid max-w-[960px] gap-3.5">
+          {filtered.map((s) => {
+            const l = LIGHT_META[s.light.toLowerCase()];
+            const isExpanded = expanded === s.id;
+            return (
+              <div key={s.id} className="rounded-card border border-line bg-card px-[26px] py-[22px]">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full" style={{ background: l?.color ?? "#5a6a66" }} />
+                    <span className="text-xs font-semibold" style={{ color: l?.color }}>{s.lightLabel}</span>
+                  </span>
+                  {s.period && (
+                    <span className="rounded-pill bg-surface px-2.5 py-[3px] text-[11.5px] font-semibold text-faint">
+                      {s.period}
+                    </span>
+                  )}
+                  {s.ratio !== null && (
+                    <span className="rounded-pill bg-surface px-2.5 py-[3px] text-[11.5px] font-semibold text-faint">
+                      Oran: %{Math.round(s.ratio * 100)}
+                    </span>
+                  )}
+                  <span className="ml-auto text-xs text-faint">{timeAgo(s.createdAt)}</span>
+                </div>
+
+                <div className="mb-1 text-[13px] text-faint">
+                  <span className="font-semibold text-ink">{s.nick}</span> → {s.dormName}, {s.dormCity}
+                </div>
+
+                {s.comment && (
+                  <p className="mb-2 rounded-xl bg-surface px-4 py-3 text-[13.5px] leading-relaxed text-body">
+                    &ldquo;{s.comment}&rdquo;
+                  </p>
+                )}
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => setExpanded(isExpanded ? null : s.id)}
+                    className="rounded-lg bg-surface px-3.5 py-[7px] text-[12.5px] font-semibold text-body hover:bg-surface2"
+                  >
+                    {isExpanded ? "Cevapları gizle" : "Cevapları göster"}
+                  </button>
+                  <span className="text-xs text-faint">
+                    👍 {s.helpfulCount} · 🤝 {s.sameCount}
+                  </span>
+                  <button
+                    onClick={() => setDeleteId(s.id)}
+                    className="ml-auto rounded-lg bg-[#fbe7e3] px-3.5 py-[7px] text-[12.5px] font-semibold text-[#b23a28] hover:bg-[#f7d8d2]"
+                  >
+                    Sil
+                  </button>
+                </div>
+
+                {isExpanded && (
+                  <div className="mt-3 grid grid-cols-4 gap-2 max-md:grid-cols-2">
+                    {SURVEY_TOPICS.map((topic, i) => {
+                      const answered = i < s.answers.length;
+                      const positive = answered && s.answers[i] === 1;
+                      return (
+                        <div
+                          key={topic}
+                          className="rounded-xl px-3 py-2.5 text-center text-[12px] font-semibold"
+                          style={{
+                            background: !answered ? "#eef1f0" : positive ? "#e7f6ef" : "#fbe7e3",
+                            color: !answered ? "#5a6a66" : positive ? "#177a52" : "#b23a28",
+                          }}
+                        >
+                          <div className="mb-0.5 text-[10px] font-normal opacity-70">{topic}</div>
+                          {!answered ? "Pas" : positive ? "İyi" : "Kötü"}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {deleteId && (
+        <ConfirmModal
+          title="Anket sil"
+          message="Bu anketi silmek istediğine emin misin? Yurdun ışığı ve istatistikleri yeniden hesaplanacak."
+          confirmLabel="Evet, sil"
+          saving={saving}
+          onConfirm={handleDelete}
+          onClose={() => setDeleteId(null)}
+        />
       )}
 
       {toast && <Toast message={toast} />}

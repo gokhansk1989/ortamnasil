@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
     todayReviews,
     weeklyUsers,
     reviewCount,
+    surveyCount,
     redCount,
     lightDist,
     recentReports,
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
     prisma.review.count({ where: { createdAt: { gte: todayStart } } }),
     prisma.user.count({ where: { createdAt: { gte: weekAgo } } }),
     prisma.review.count({ where: { status: "APPROVED" } }),
+    prisma.survey.count(),
     prisma.survey.count({ where: { light: "RED" } }),
     prisma.survey.groupBy({ by: ["light"], _count: true }),
     prisma.report.findMany({
@@ -89,6 +91,7 @@ export async function GET(req: NextRequest) {
       todayReviews,
       weeklyUsers,
       reviewCount,
+      surveyCount,
       redCount,
     },
     distribution,

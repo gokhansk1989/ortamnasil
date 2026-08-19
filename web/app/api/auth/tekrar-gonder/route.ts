@@ -63,7 +63,8 @@ export async function POST(req: NextRequest) {
       userId: credential.userId,
       message: "Kod gönderildi",
     });
-  } catch {
+  } catch (err) {
+    console.error("[tekrar-gonder] Hata:", err);
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
 }

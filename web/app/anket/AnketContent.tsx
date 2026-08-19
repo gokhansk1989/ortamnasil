@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { DormSelector, type DormOption } from "@/components/DormSelector";
 import { QUESTIONS, RESULT_BLURB } from "@/lib/survey";
 import { LIGHTS, scoreSurvey, type Answer } from "@/lib/lights";
 import { trackEvent, trackMetaConversion } from "@/lib/analytics";
+import { AdSlot } from "@/components/AdSlot";
 
 function buildPeriods(): string[] {
   const now = new Date();
@@ -55,6 +56,27 @@ export function AnketContent({ dormParam, resume }: { dormParam: string; resume?
   const [commentDone, setCommentDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [verifyGate, setVerifyGate] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState("");
+  const [verifyCode, setVerifyCode] = useState(["", "", "", "", "", ""]);
+  const [verifyStep, setVerifyStep] = useState<"email" | "code">("email");
+  const [verifyUserId, setVerifyUserId] = useState("");
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+  const [verifySuccess, setVerifySuccess] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const pendingComment = useRef("");
+  const verifyDigitRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const startResendCooldown = useCallback(() => {
+    setResendCooldown(60);
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) { clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
 
   const needsPeriod = relation === "FORMER";
   const questionsComplete = step >= QUESTIONS.length;
@@ -119,8 +141,6 @@ export function AnketContent({ dormParam, resume }: { dormParam: string; resume?
         }),
       });
 
-      // Kimlik en sonda isteniyor: cevaplar kaybolmasın diye taslağı saklayıp
-      // girişe gönderiyoruz, dönüşte otomatik kaydediliyor.
       if (res.status === 401) {
         sessionStorage.setItem(
           DRAFT_KEY,
@@ -133,6 +153,19 @@ export function AnketContent({ dormParam, resume }: { dormParam: string; resume?
       }
 
       const data = await res.json();
+
+      if (res.status === 403 && data.code === "EMAIL_NOT_VERIFIED") {
+        pendingComment.current = finalComment;
+        setVerifyGate(true);
+        setVerifyStep("email");
+        setVerifyError("");
+        setVerifySuccess("");
+        setVerifyEmail("");
+        setVerifyCode(["", "", "", "", "", ""]);
+        setSubmitting(false);
+        return;
+      }
+
       if (!res.ok) {
         setSubmitError(data.error || "Bir hata oluştu");
         return;
@@ -318,6 +351,172 @@ export function AnketContent({ dormParam, resume }: { dormParam: string; resume?
                 olduğunu bilmez, biz dahil. 🤫
               </p>
             </>
+          ) : verifyGate ? (
+            <div className="animate-pop rounded-[22px] border border-line bg-card px-12 py-11 shadow-lg max-md:px-6">
+              <div className="mb-4 font-mono text-[12.5px] font-bold tracking-wider text-primary">
+                E-POSTA DOĞRULAMA GEREKLİ
+              </div>
+              {verifyStep === "email" ? (
+                <>
+                  <h1 className="mb-2 text-[28px] font-bold leading-tight tracking-[-.3px] text-ink">
+                    Anketi kaydetmek için e-postanı doğrula
+                  </h1>
+                  <p className="mb-6 text-[15px] text-faint">
+                    Cevapların hazır! Kaydetmek için hesabındaki e-postayı doğrulaman gerekiyor.
+                    E-postanı gir, sana doğrulama kodu gönderelim.
+                  </p>
+                  <input
+                    type="email"
+                    value={verifyEmail}
+                    onChange={(e) => setVerifyEmail(e.target.value)}
+                    placeholder="Kayıt olduğun e-posta"
+                    className="mb-4 w-full rounded-xl border-2 border-line bg-card px-4 py-3.5 text-[15px] text-ink outline-none transition-colors focus:border-primary/40"
+                  />
+                  {verifyError && (
+                    <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[14px] font-medium text-red-600">
+                      {verifyError}
+                    </div>
+                  )}
+                  <button
+                    onClick={async () => {
+                      if (!verifyEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(verifyEmail)) {
+                        setVerifyError("Geçerli bir e-posta gir.");
+                        return;
+                      }
+                      setVerifyLoading(true);
+                      setVerifyError("");
+                      try {
+                        const res = await fetch("/api/auth/tekrar-gonder", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email: verifyEmail }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) { setVerifyError(data.error || "Bir hata oluştu"); return; }
+                        if (data.userId) setVerifyUserId(data.userId);
+                        setVerifyStep("code");
+                        setVerifySuccess("Doğrulama kodu gönderildi!");
+                        startResendCooldown();
+                      } catch { setVerifyError("Sunucuya ulaşılamadı"); }
+                      finally { setVerifyLoading(false); }
+                    }}
+                    disabled={verifyLoading}
+                    className="w-full rounded-xl py-3.5 text-[15px] font-bold text-white transition-all disabled:opacity-40"
+                    style={{ background: "#F97316" }}
+                  >
+                    {verifyLoading ? "Gönderiliyor..." : "Doğrulama kodu gönder"}
+                  </button>
+                  <p className="mt-4 text-center text-[12.5px] text-faint2">
+                    Kayıt olurken kullandığın e-postayı gir.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="mb-2 text-[28px] font-bold leading-tight tracking-[-.3px] text-ink">
+                    Doğrulama kodunu gir
+                  </h1>
+                  <p className="mb-6 text-[15px] text-faint">
+                    <span className="font-semibold text-ink">{verifyEmail}</span> adresine 6 haneli kod gönderdik.
+                  </p>
+                  <div className="mb-4 flex justify-center gap-2.5" onPaste={(e) => {
+                    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+                    if (pasted.length === 6) { e.preventDefault(); setVerifyCode(pasted.split("")); verifyDigitRefs.current[5]?.focus(); }
+                  }}>
+                    {verifyCode.map((digit, i) => (
+                      <input
+                        key={i}
+                        ref={(el) => { verifyDigitRefs.current[i] = el; }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => {
+                          if (!/^\d*$/.test(e.target.value)) return;
+                          const d = e.target.value.slice(-1);
+                          const next = [...verifyCode]; next[i] = d; setVerifyCode(next);
+                          if (d && i < 5) verifyDigitRefs.current[i + 1]?.focus();
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Backspace" && !verifyCode[i] && i > 0) verifyDigitRefs.current[i - 1]?.focus();
+                        }}
+                        className="h-14 w-12 rounded-xl border-2 border-line bg-surface text-center font-mono text-2xl font-bold text-ink outline-none transition-colors focus:border-primary/60 max-md:h-12 max-md:w-10"
+                      />
+                    ))}
+                  </div>
+                  {verifyError && (
+                    <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[14px] font-medium text-red-600">
+                      {verifyError}
+                    </div>
+                  )}
+                  {verifySuccess && (
+                    <div className="mb-4 rounded-xl bg-green-50 px-4 py-3 text-[14px] font-medium text-green-700">
+                      {verifySuccess}
+                    </div>
+                  )}
+                  <button
+                    onClick={async () => {
+                      const fullCode = verifyCode.join("");
+                      if (fullCode.length !== 6) return;
+                      setVerifyLoading(true);
+                      setVerifyError("");
+                      try {
+                        const res = await fetch("/api/auth/dogrula", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ userId: verifyUserId, code: fullCode }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                          setVerifyError(data.error || "Bir hata oluştu");
+                          setVerifyCode(["", "", "", "", "", ""]);
+                          verifyDigitRefs.current[0]?.focus();
+                          return;
+                        }
+                        setVerifyGate(false);
+                        setVerifySuccess("");
+                        submitSurvey(pendingComment.current);
+                      } catch { setVerifyError("Sunucuya ulaşılamadı"); }
+                      finally { setVerifyLoading(false); }
+                    }}
+                    disabled={verifyLoading || verifyCode.join("").length !== 6}
+                    className="w-full rounded-xl py-3.5 text-[15px] font-bold text-white transition-all disabled:opacity-40"
+                    style={{ background: "#F97316" }}
+                  >
+                    {verifyLoading ? "Doğrulanıyor..." : "Doğrula ve anketi kaydet"}
+                  </button>
+                  <div className="mt-4 flex items-center justify-between text-[13px]">
+                    <button onClick={() => setVerifyStep("email")} className="text-muted hover:text-ink">← Geri</button>
+                    <button
+                      onClick={async () => {
+                        if (resendCooldown > 0) return;
+                        setVerifyLoading(true);
+                        try {
+                          const res = await fetch("/api/auth/tekrar-gonder", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email: verifyEmail }),
+                          });
+                          const data = await res.json();
+                          if (!res.ok) { setVerifyError(data.error || "Hata"); return; }
+                          setVerifySuccess("Yeni kod gönderildi!");
+                          setVerifyCode(["", "", "", "", "", ""]);
+                          startResendCooldown();
+                          setTimeout(() => setVerifySuccess(""), 3000);
+                        } catch { setVerifyError("Sunucuya ulaşılamadı"); }
+                        finally { setVerifyLoading(false); }
+                      }}
+                      disabled={resendCooldown > 0 || verifyLoading}
+                      className="font-medium text-primary hover:text-primary/80 disabled:text-faint2"
+                    >
+                      {resendCooldown > 0 ? `Tekrar gönder (${resendCooldown}s)` : "Tekrar gönder"}
+                    </button>
+                  </div>
+                  <p className="mt-3 text-center text-[12.5px] text-faint2">
+                    Spam klasörünü kontrol etmeyi unutma.
+                  </p>
+                </>
+              )}
+            </div>
           ) : !commentDone ? (
             <div className="animate-pop rounded-[22px] border border-line bg-card px-12 py-11 shadow-lg max-md:px-6">
               <div className="mb-4 font-mono text-[12.5px] font-bold tracking-wider text-primary">
@@ -403,6 +602,7 @@ export function AnketContent({ dormParam, resume }: { dormParam: string; resume?
                   </Link>
                 </div>
               </div>
+              <AdSlot slot="4832879021" format="auto" className="mt-6 rounded-[22px] border border-line bg-card p-4" />
             </>
           )}
         </div>

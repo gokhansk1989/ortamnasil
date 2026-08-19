@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LIGHTS, type LightKey } from "@/lib/lights";
 
-type AdminView = "dashboard" | "moderation" | "reviews" | "surveys" | "dorms" | "users" | "blog" | "faq";
+type AdminView = "dashboard" | "moderation" | "reviews" | "surveys" | "dorms" | "users" | "blog" | "faq" | "activity";
 
 const MENU = [
   { key: "dashboard" as const, icon: "📊", name: "Kumanda odası" },
@@ -12,6 +13,7 @@ const MENU = [
   { key: "surveys" as const, icon: "📋", name: "Anketler" },
   { key: "dorms" as const, icon: "🏠", name: "Yurtlar" },
   { key: "users" as const, icon: "👥", name: "Kullanıcılar" },
+  { key: "activity" as const, icon: "⚡", name: "Aktivite" },
   { key: "blog" as const, icon: "📝", name: "Blog" },
   { key: "faq" as const, icon: "❓", name: "SSS" },
 ];
@@ -29,6 +31,31 @@ interface PendingReviewItem {
   createdAt: string;
 }
 
+interface TrendData {
+  todaySurveys: number;
+  yesterdaySurveys: number;
+  todayUsers: number;
+  yesterdayUsers: number;
+  thisWeekSurveys: number;
+  lastWeekSurveys: number;
+  thisWeekUsers: number;
+  lastWeekUsers: number;
+}
+
+interface ActivityItem {
+  type: "survey" | "user" | "review";
+  nick: string;
+  detail: string;
+  light: string | null;
+  createdAt: string;
+}
+
+interface ChartDay {
+  date: string;
+  surveys: number;
+  users: number;
+}
+
 interface DashboardData {
   kpis: {
     pendingReports: number;
@@ -43,9 +70,12 @@ interface DashboardData {
     surveyCount: number;
     redCount: number;
   };
+  trends: TrendData;
   distribution: { light: string; count: number; pct: number }[];
   queue: QueueItem[];
   pendingReviewQueue: PendingReviewItem[];
+  activity: ActivityItem[];
+  chartData: ChartDay[];
 }
 
 interface QueueItem {
@@ -125,16 +155,53 @@ function formatDate(dateStr: string): string {
 // ── Main ──
 
 export default function AdminPage() {
+  const router = useRouter();
   const [view, setView] = useState<AdminView>("dashboard");
   const [data, setData] = useState<DashboardData | null>(null);
   const [resolved, setResolved] = useState<Set<string>>(new Set());
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifSeen, setNotifSeen] = useState<{ reports: number; reviews: number }>({ reports: 0, reviews: 0 });
+  const notifRef = useRef<HTMLDivElement>(null!);
+
+  const notifCount = useMemo(() => {
+    if (!data) return 0;
+    const newReports = Math.max(0, data.kpis.pendingReports - notifSeen.reports);
+    const newReviews = Math.max(0, data.kpis.pendingReviews - notifSeen.reviews);
+    return newReports + newReviews;
+  }, [data, notifSeen]);
+
+  const markNotifsSeen = useCallback(() => {
+    if (data) setNotifSeen({ reports: data.kpis.pendingReports, reviews: data.kpis.pendingReviews });
+  }, [data]);
 
   useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await fetch("/api/admin/cikis", { method: "POST" });
+    router.push("/admin/giris");
+  }
+
+  const fetchDashboard = useCallback(() => {
     fetch("/api/admin/dashboard")
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d) setData(d); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetchDashboard();
+    const interval = setInterval(fetchDashboard, 60000);
+    return () => clearInterval(interval);
+  }, [fetchDashboard]);
 
   const queue = useMemo(
     () => (data?.queue ?? []).filter((q) => !resolved.has(q.id)),
@@ -198,9 +265,109 @@ export default function AdminPage() {
             );
           })}
         </nav>
+        <div className="mt-auto border-t border-white/[.08] px-4 py-4">
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">A</div>
+            <div className="min-w-0">
+              <div className="truncate text-[13px] font-medium text-white/90">Admin</div>
+              <div className="truncate text-[11px] text-white/40">Kumanda yetkisi</div>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-[13px] text-white/50 transition-colors hover:bg-white/[.06] hover:text-white/80"
+          >
+            {loggingOut ? "Çıkılıyor..." : "Oturumu kapat"}
+          </button>
+        </div>
       </aside>
 
+      {mobileMenu && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenu(false)} />
+          <aside className="relative flex h-full w-64 flex-col bg-ink py-6 text-white">
+            <div className="flex items-center justify-between border-b border-white/[.08] px-6 pb-6">
+              <div className="flex items-center gap-2.5">
+                <span className="flex gap-1" aria-hidden>
+                  <span className="h-[9px] w-[9px] rounded-full bg-light-red" />
+                  <span className="h-[9px] w-[9px] rounded-full bg-light-yellow" />
+                  <span className="h-[9px] w-[9px] rounded-full bg-light-green" />
+                </span>
+                <div className="text-[17px] font-bold">OrtamNasıl?</div>
+              </div>
+              <button onClick={() => setMobileMenu(false)} className="text-white/50 hover:text-white text-xl">✕</button>
+            </div>
+            <nav className="flex flex-1 flex-col gap-0.5 p-3">
+              {MENU.map((m) => {
+                const on = view === m.key;
+                return (
+                  <button
+                    key={m.key}
+                    onClick={() => { setView(m.key); setMobileMenu(false); }}
+                    className="flex items-center gap-3 rounded-[10px] px-3.5 py-[11px] text-[14.5px]"
+                    style={{
+                      background: on ? "rgba(62,230,168,.14)" : "transparent",
+                      color: on ? "#3ee6a8" : "#9ec4bb",
+                      fontWeight: on ? 600 : 400,
+                    }}
+                  >
+                    <span className="text-base">{m.icon}</span>
+                    {m.name}
+                  </button>
+                );
+              })}
+            </nav>
+            <div className="border-t border-white/[.08] px-4 py-4">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent">A</div>
+                <div className="text-[13px] font-medium text-white/90">Admin</div>
+              </div>
+              <button
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-[13px] text-white/50 hover:bg-white/[.06] hover:text-white/80"
+              >
+                {loggingOut ? "Çıkılıyor..." : "Oturumu kapat"}
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       <main className="flex-1 px-10 py-8 max-md:px-5">
+        <div className="mb-4 flex items-center gap-3 md:hidden">
+          <button
+            onClick={() => setMobileMenu(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-card text-lg"
+          >
+            ☰
+          </button>
+          <span className="flex-1 text-[15px] font-semibold text-ink">
+            {MENU.find((m) => m.key === view)?.icon} {MENU.find((m) => m.key === view)?.name}
+          </span>
+          <NotificationBell
+            notifOpen={notifOpen}
+            setNotifOpen={setNotifOpen}
+            notifCount={notifCount}
+            markNotifsSeen={markNotifsSeen}
+            data={data}
+            setView={setView}
+            notifRef={notifRef}
+          />
+        </div>
+        <div className="mb-6 flex items-center justify-end max-md:hidden">
+          <NotificationBell
+            notifOpen={notifOpen}
+            setNotifOpen={setNotifOpen}
+            notifCount={notifCount}
+            markNotifsSeen={markNotifsSeen}
+            data={data}
+            setView={setView}
+            notifRef={notifRef}
+          />
+        </div>
+
         {view === "dorms" ? (
           <DormManager />
         ) : view === "users" ? (
@@ -215,6 +382,8 @@ export default function AdminPage() {
           <SurveyManager />
         ) : view === "moderation" ? (
           <ModerationView queue={queue} resolve={resolve} />
+        ) : view === "activity" ? (
+          <ActivityView activity={data?.activity ?? []} />
         ) : (
           <DashboardView data={data} queue={queue} setView={setView} resolve={resolve} dateStr={dateStr} />
         )}
@@ -223,7 +392,130 @@ export default function AdminPage() {
   );
 }
 
+// ── Notification Bell ──
+
+function NotificationBell({
+  notifOpen, setNotifOpen, notifCount, markNotifsSeen, data, setView, notifRef,
+}: {
+  notifOpen: boolean;
+  setNotifOpen: (v: boolean) => void;
+  notifCount: number;
+  markNotifsSeen: () => void;
+  data: DashboardData | null;
+  setView: (v: AdminView) => void;
+  notifRef: React.RefObject<HTMLDivElement>;
+}) {
+  return (
+    <div ref={notifRef} className="relative">
+      <button
+        onClick={() => {
+          setNotifOpen(!notifOpen);
+          if (!notifOpen) markNotifsSeen();
+        }}
+        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-card text-lg transition-colors hover:bg-surface"
+      >
+        🔔
+        {notifCount > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-light-red px-1 text-[10px] font-bold text-white">
+            {notifCount > 99 ? "99+" : notifCount}
+          </span>
+        )}
+      </button>
+      {notifOpen && (
+        <div className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-line bg-card shadow-xl">
+          <div className="border-b border-line px-4 py-3">
+            <h4 className="text-[14px] font-bold text-ink">Bildirimler</h4>
+          </div>
+          <div className="max-h-72 overflow-y-auto">
+            {!data || (data.kpis.pendingReports === 0 && data.kpis.pendingReviews === 0 && (!data.activity || data.activity.length === 0)) ? (
+              <div className="px-4 py-8 text-center text-sm text-faint">Yeni bildirim yok</div>
+            ) : (
+              <>
+                {data.kpis.pendingReports > 0 && (
+                  <button
+                    onClick={() => { setView("moderation"); setNotifOpen(false); }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#fbe7e3] text-sm">🚨</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13px] font-semibold text-ink">{data.kpis.pendingReports} bekleyen rapor</div>
+                      <div className="text-[11px] text-faint">Moderasyon kuyruğunda</div>
+                    </div>
+                  </button>
+                )}
+                {data.kpis.pendingReviews > 0 && (
+                  <button
+                    onClick={() => { setView("reviews"); setNotifOpen(false); }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#fbf1db] text-sm">💬</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13px] font-semibold text-ink">{data.kpis.pendingReviews} bekleyen yorum</div>
+                      <div className="text-[11px] text-faint">Onay bekliyor</div>
+                    </div>
+                  </button>
+                )}
+                {data.activity?.slice(0, 5).map((a, i) => (
+                  <div key={i} className="flex items-center gap-3 px-4 py-2.5 border-t border-line/50">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface text-xs">
+                      {a.type === "survey" ? "📋" : a.type === "review" ? "💬" : "👤"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[12px] text-ink">
+                        <span className="font-semibold">{a.nick}</span>
+                        {a.type === "survey" ? ` → ${a.detail}` : a.type === "user" ? " kayıt oldu" : ` yorum yazdı`}
+                      </div>
+                      <div className="text-[10px] text-faint">{timeAgo(a.createdAt)}</div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+          {data?.activity && data.activity.length > 5 && (
+            <button
+              onClick={() => { setView("activity"); setNotifOpen(false); }}
+              className="w-full border-t border-line px-4 py-2.5 text-center text-[12px] font-semibold text-primary hover:bg-surface"
+            >
+              Tüm aktiviteleri gör
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Dashboard ──
+
+function TrendBadge({ current, previous }: { current: number; previous: number }) {
+  if (previous === 0 && current === 0) return null;
+  const diff = current - previous;
+  const pct = previous > 0 ? Math.round((diff / previous) * 100) : current > 0 ? 100 : 0;
+  if (diff === 0) return <span className="text-[11px] text-faint">→ aynı</span>;
+  const up = diff > 0;
+  return (
+    <span className={`text-[11px] font-semibold ${up ? "text-[#177a52]" : "text-[#b23a28]"}`}>
+      {up ? "↑" : "↓"} {Math.abs(pct)}%
+    </span>
+  );
+}
+
+function MiniChart({ data, color }: { data: ChartDay[]; color: string }) {
+  if (!data.length) return null;
+  const values = data.map((d) => d.surveys + d.users);
+  const max = Math.max(...values, 1);
+  const w = 280;
+  const h = 60;
+  const points = values.map((v, i) => `${(i / (values.length - 1)) * w},${h - (v / max) * h}`).join(" ");
+  const areaPoints = `0,${h} ${points} ${w},${h}`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 60 }}>
+      <polyline fill="none" stroke={color} strokeWidth="2" points={points} />
+      <polygon fill={color} fillOpacity="0.08" points={areaPoints} />
+    </svg>
+  );
+}
 
 function DashboardView({
   data, queue, setView, resolve, dateStr,
@@ -235,13 +527,46 @@ function DashboardView({
   dateStr: string;
 }) {
   const k = data?.kpis;
+  const t = data?.trends;
   const dist = data?.distribution ?? [];
 
   const kpis = [
-    { label: "Bekleyen bildirimler", value: k?.pendingReports ?? 0, color: (k?.pendingReports ?? 0) > 0 ? "#b23a28" : "#12312c" },
-    { label: "Onay bekleyen yorum", value: k?.pendingReviews ?? 0, color: (k?.pendingReviews ?? 0) > 0 ? "#b07d1e" : "#12312c" },
-    { label: "Toplam yurt", value: k?.dormCount ?? 0, color: "#12312c" },
-    { label: "Doldurulan anket", value: k?.surveyCount ?? 0, color: "#12312c" },
+    {
+      label: "Bugün anket",
+      value: t?.todaySurveys ?? 0,
+      color: "#12312c",
+      trend: t ? { current: t.todaySurveys, previous: t.yesterdaySurveys } : null,
+    },
+    {
+      label: "Bugün kayıt",
+      value: t?.todayUsers ?? 0,
+      color: "#12312c",
+      trend: t ? { current: t.todayUsers, previous: t.yesterdayUsers } : null,
+    },
+    {
+      label: "Haftalık anket",
+      value: t?.thisWeekSurveys ?? 0,
+      color: "#12312c",
+      trend: t ? { current: t.thisWeekSurveys, previous: t.lastWeekSurveys } : null,
+    },
+    {
+      label: "Haftalık kayıt",
+      value: t?.thisWeekUsers ?? 0,
+      color: "#12312c",
+      trend: t ? { current: t.thisWeekUsers, previous: t.lastWeekUsers } : null,
+    },
+    {
+      label: "Bekleyen bildirim",
+      value: k?.pendingReports ?? 0,
+      color: (k?.pendingReports ?? 0) > 0 ? "#b23a28" : "#12312c",
+      trend: null,
+    },
+    {
+      label: "Toplam yurt",
+      value: k?.dormCount ?? 0,
+      color: "#12312c",
+      trend: null,
+    },
   ];
 
   return (
@@ -253,11 +578,14 @@ function DashboardView({
         </span>
       </div>
 
-      <div className="mb-7 grid grid-cols-4 gap-4 max-lg:grid-cols-2">
+      <div className="mb-7 grid grid-cols-6 gap-4 max-lg:grid-cols-3 max-md:grid-cols-2">
         {kpis.map((kpi) => (
           <div key={kpi.label} className="rounded-card border border-line bg-card p-[22px]">
-            <div className="mb-1.5 text-[13px] text-faint">{kpi.label}</div>
-            <div className="text-[30px] font-bold" style={{ color: kpi.color }}>
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-[12px] text-faint">{kpi.label}</span>
+              {kpi.trend && <TrendBadge current={kpi.trend.current} previous={kpi.trend.previous} />}
+            </div>
+            <div className="text-[28px] font-bold" style={{ color: kpi.color }}>
               {kpi.value.toLocaleString("tr")}
             </div>
           </div>
@@ -336,6 +664,52 @@ function DashboardView({
               <div className="py-4 text-center text-sm text-onDarkMuted">
                 Henüz anket verisi yok.
               </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-[1.5fr_1fr] gap-5 max-lg:grid-cols-1">
+        <div className="rounded-2xl border border-line bg-card px-7 py-6">
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 className="text-[18px] text-ink">Son 30 gün trendi</h2>
+            <span className="text-[12px] text-faint">Anket + Kayıt</span>
+          </div>
+          {data?.chartData ? (
+            <MiniChart data={data.chartData} color="#F97316" />
+          ) : (
+            <div className="py-8 text-center text-sm text-faint animate-pulse">Yükleniyor...</div>
+          )}
+          {data?.chartData && (
+            <div className="mt-2 flex justify-between text-[11px] text-faint">
+              <span>{data.chartData[0]?.date.slice(5)}</span>
+              <span>{data.chartData[data.chartData.length - 1]?.date.slice(5)}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-line bg-card px-7 py-6">
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 className="text-[18px] text-ink">Son aktivite</h2>
+            <button onClick={() => setView("activity")} className="text-[13px] font-semibold text-primary">
+              Tümü →
+            </button>
+          </div>
+          <div className="grid gap-2 max-h-[240px] overflow-y-auto">
+            {(data?.activity ?? []).slice(0, 8).map((a, i) => (
+              <div key={i} className="flex items-center gap-2.5 rounded-xl bg-surface px-3.5 py-2.5">
+                <span className="text-sm">
+                  {a.type === "survey" ? "📋" : a.type === "user" ? "👤" : "💬"}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <span className="text-[13px] font-semibold text-ink">{a.nick}</span>
+                  <span className="text-[12px] text-faint"> · {a.detail}</span>
+                </div>
+                <span className="whitespace-nowrap text-[11px] text-faint">{timeAgo(a.createdAt)}</span>
+              </div>
+            ))}
+            {(data?.activity ?? []).length === 0 && (
+              <div className="py-4 text-center text-sm text-faint">Henüz aktivite yok.</div>
             )}
           </div>
         </div>
@@ -548,6 +922,14 @@ function DormManager() {
                       <td className="px-4 py-3 font-mono text-faint max-md:hidden">{d.surveyCount}</td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-1.5">
+                          <a
+                            href={`/yurt/${d.id}`}
+                            target="_blank"
+                            rel="noopener"
+                            className="rounded-lg border border-line px-2.5 py-1.5 text-xs font-semibold text-faint hover:bg-surface hover:text-ink"
+                          >
+                            ↗
+                          </a>
                           <button
                             onClick={() => { setEditDorm(d); setModal("edit"); }}
                             className="rounded-lg border border-line px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-surface"
@@ -712,6 +1094,44 @@ function UserManager() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetSaving, setResetSaving] = useState(false);
   const [freezeLoading, setFreezeLoading] = useState<string | null>(null);
+  const [detailUserId, setDetailUserId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkFreezing, setBulkFreezing] = useState(false);
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === filtered.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.map((u) => u.id)));
+    }
+  }
+
+  async function bulkFreeze(freeze: boolean) {
+    setBulkFreezing(true);
+    let ok = 0;
+    for (const id of selected) {
+      try {
+        const res = await fetch("/api/admin/kullanicilar/freeze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: id, freeze }),
+        });
+        if (res.ok) ok++;
+      } catch { /* */ }
+    }
+    showToast(`${ok} kullanıcı ${freeze ? "donduruldu" : "aktifleştirildi"}`);
+    setSelected(new Set());
+    setBulkFreezing(false);
+    loadUsers();
+  }
 
   useEffect(() => { loadUsers(); }, []);
 
@@ -783,8 +1203,8 @@ function UserManager() {
         <p className="mt-1 text-sm text-faint">{users.length} kayıtlı kullanıcı</p>
       </div>
 
-      <div className="mb-5">
-        <div className="flex items-center gap-3 rounded-xl border-[1.5px] border-inputline bg-card px-4 max-w-[400px]">
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <div className="flex flex-1 items-center gap-3 rounded-xl border-[1.5px] border-inputline bg-card px-4 max-w-[400px]">
           <span className="text-faint">⌕</span>
           <input
             value={query}
@@ -794,6 +1214,26 @@ function UserManager() {
           />
           {query && <button onClick={() => setQuery("")} className="text-faint hover:text-ink">✕</button>}
         </div>
+        {selected.size > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-semibold text-ink">{selected.size} seçili</span>
+            <button
+              onClick={() => bulkFreeze(true)}
+              disabled={bulkFreezing}
+              className="rounded-lg bg-[#fbe7e3] px-3 py-1.5 text-[12px] font-semibold text-[#b23a28] hover:bg-[#f7d8d2] disabled:opacity-50"
+            >
+              Toplu dondur
+            </button>
+            <button
+              onClick={() => bulkFreeze(false)}
+              disabled={bulkFreezing}
+              className="rounded-lg bg-[#e7f6ef] px-3 py-1.5 text-[12px] font-semibold text-[#177a52] hover:bg-[#d6f0e2] disabled:opacity-50"
+            >
+              Toplu aktifleştir
+            </button>
+            <button onClick={() => setSelected(new Set())} className="text-[12px] text-faint hover:text-ink">Temizle</button>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -803,6 +1243,9 @@ function UserManager() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-line bg-surface text-xs text-faint">
+                <th className="w-10 px-3 py-3">
+                  <input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleSelectAll} className="accent-primary" />
+                </th>
                 <th className="px-4 py-3 font-semibold">Kullanıcı</th>
                 <th className="px-4 py-3 font-semibold">Durum</th>
                 <th className="px-4 py-3 font-semibold max-md:hidden">Anket</th>
@@ -813,11 +1256,16 @@ function UserManager() {
             <tbody>
               {filtered.map((u) => (
                 <tr key={u.id} className="border-b border-line last:border-0 hover:bg-surface/50">
+                  <td className="w-10 px-3 py-3">
+                    <input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleSelect(u.id)} className="accent-primary" />
+                  </td>
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-ink">{u.nick}</div>
-                    <div className="text-xs text-faint">
-                      {u.emailVerified ? "E-posta doğrulanmış" : "E-posta doğrulanmamış"}
-                    </div>
+                    <button onClick={() => setDetailUserId(u.id)} className="text-left hover:underline">
+                      <div className="font-semibold text-ink">{u.nick}</div>
+                      <div className="text-xs text-faint">
+                        {u.emailVerified ? "E-posta doğrulanmış" : "E-posta doğrulanmamış"}
+                      </div>
+                    </button>
                   </td>
                   <td className="px-4 py-3">
                     {u.frozen ? (
@@ -919,6 +1367,8 @@ function UserManager() {
           </div>
         </div>
       )}
+
+      {detailUserId && <UserDetailModal userId={detailUserId} onClose={() => setDetailUserId(null)} />}
 
       {toast && <Toast message={toast} />}
     </>
@@ -1844,6 +2294,203 @@ function SurveyManager() {
 
       {toast && <Toast message={toast} />}
     </>
+  );
+}
+
+// ── Activity View ──
+
+function ActivityView({ activity }: { activity: ActivityItem[] }) {
+  return (
+    <>
+      <div className="mb-6">
+        <h1 className="text-[26px] tracking-[-.4px] text-ink">
+          Son aktivite{" "}
+          <span className="text-[15px] font-normal text-faint">({activity.length} kayıt)</span>
+        </h1>
+        <p className="mt-1 text-sm text-faint">Kayıtlar, anketler ve yorumlar — canlı akış</p>
+      </div>
+      <div className="grid max-w-[700px] gap-3">
+        {activity.map((a, i) => (
+          <div key={i} className="flex items-start gap-3.5 rounded-card border border-line bg-card px-5 py-4">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-lg"
+              style={{
+                background: a.type === "survey" ? "#FFF7ED" : a.type === "user" ? "#EFF6FF" : "#F0FDF4",
+              }}
+            >
+              {a.type === "survey" ? "📋" : a.type === "user" ? "👤" : "💬"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[14px]">
+                <span className="font-semibold text-ink">{a.nick}</span>
+                <span className="text-faint">
+                  {a.type === "survey" ? " anket doldurdu → " : a.type === "user" ? " hesap oluşturdu · " : " yorum yazdı → "}
+                </span>
+                <span className="text-body">{a.detail}</span>
+              </div>
+              <div className="mt-1 flex items-center gap-2">
+                <span className="text-[11.5px] text-faint">{timeAgo(a.createdAt)}</span>
+                {a.light && (
+                  <span className="inline-flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: LIGHT_META[a.light.toLowerCase()]?.color }} />
+                    <span className="text-[11px]" style={{ color: LIGHT_META[a.light.toLowerCase()]?.color }}>
+                      {LIGHT_META[a.light.toLowerCase()]?.name}
+                    </span>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+        {activity.length === 0 && (
+          <div className="rounded-2xl border-[1.5px] border-dashed border-onDarkMuted bg-card p-14 text-center">
+            <div className="mb-3 text-[40px]">⚡</div>
+            <div className="text-[19px] font-semibold text-ink">Henüz aktivite yok</div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ── User Detail Modal ──
+
+interface UserDetail {
+  id: string;
+  nick: string;
+  emailVerified: boolean;
+  frozen: boolean;
+  frozenAt: string | null;
+  createdAt: string;
+  _count: { surveys: number; reviews: number };
+  surveys: { id: string; light: string; ratio: number | null; comment: string | null; createdAt: string; dorm: { name: string; city: string } }[];
+  reviews: { id: string; title: string; text: string; status: string; light: string; createdAt: string; dorm: { name: string; city: string } }[];
+}
+
+function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => void }) {
+  const [user, setUser] = useState<UserDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"surveys" | "reviews">("surveys");
+
+  useEffect(() => {
+    fetch(`/api/admin/kullanicilar/${userId}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d) setUser(d); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="relative max-h-[85vh] w-full max-w-[640px] overflow-y-auto rounded-2xl bg-card p-8 shadow-xl mx-4">
+        <button onClick={onClose} className="absolute right-4 top-4 text-faint hover:text-ink text-lg">✕</button>
+
+        {loading ? (
+          <div className="py-16 text-center text-faint animate-pulse">Yükleniyor...</div>
+        ) : !user ? (
+          <div className="py-16 text-center text-faint">Kullanıcı bulunamadı</div>
+        ) : (
+          <>
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
+                  {user.nick.charAt(0).toLocaleUpperCase("tr")}
+                </div>
+                <div>
+                  <h2 className="text-[20px] font-bold text-ink">{user.nick}</h2>
+                  <div className="flex items-center gap-2 text-[12px] text-faint">
+                    <span>{formatDate(user.createdAt)}</span>
+                    {user.emailVerified ? (
+                      <span className="rounded-pill bg-green-100 px-2 py-0.5 text-[10.5px] font-semibold text-green-700">Doğrulanmış</span>
+                    ) : (
+                      <span className="rounded-pill bg-yellow-100 px-2 py-0.5 text-[10.5px] font-semibold text-yellow-700">Doğrulanmamış</span>
+                    )}
+                    {user.frozen && (
+                      <span className="rounded-pill bg-red-100 px-2 py-0.5 text-[10.5px] font-semibold text-red-700">Dondurulmuş</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-4 text-sm text-faint">
+                <span>{user._count.surveys} anket</span>
+                <span>{user._count.reviews} yorum</span>
+              </div>
+            </div>
+
+            <div className="mb-4 flex gap-2">
+              <button
+                onClick={() => setTab("surveys")}
+                className="rounded-lg px-4 py-2 text-[13px] font-semibold"
+                style={{
+                  background: tab === "surveys" ? "#12312c" : "#eef1f0",
+                  color: tab === "surveys" ? "#fff" : "#5a6a66",
+                }}
+              >
+                Anketler ({user.surveys.length})
+              </button>
+              <button
+                onClick={() => setTab("reviews")}
+                className="rounded-lg px-4 py-2 text-[13px] font-semibold"
+                style={{
+                  background: tab === "reviews" ? "#12312c" : "#eef1f0",
+                  color: tab === "reviews" ? "#fff" : "#5a6a66",
+                }}
+              >
+                Yorumlar ({user.reviews.length})
+              </button>
+            </div>
+
+            {tab === "surveys" ? (
+              <div className="grid gap-2.5">
+                {user.surveys.length === 0 && <div className="py-6 text-center text-sm text-faint">Henüz anket doldurmamış.</div>}
+                {user.surveys.map((s) => {
+                  const l = LIGHT_META[s.light.toLowerCase()];
+                  return (
+                    <div key={s.id} className="rounded-xl border border-line px-4 py-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[13px] font-semibold text-ink">{s.dorm.name}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="h-2 w-2 rounded-full" style={{ background: l?.color }} />
+                          <span className="text-[11px] font-semibold" style={{ color: l?.color }}>{l?.name}</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11.5px] text-faint">
+                        <span>{s.dorm.city}</span>
+                        {s.ratio !== null && <span>· Oran: %{Math.round(s.ratio * 100)}</span>}
+                        <span>· {formatDate(s.createdAt)}</span>
+                      </div>
+                      {s.comment && (
+                        <p className="mt-2 text-[12.5px] text-body leading-relaxed">&ldquo;{s.comment}&rdquo;</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="grid gap-2.5">
+                {user.reviews.length === 0 && <div className="py-6 text-center text-sm text-faint">Henüz yorum yazmamış.</div>}
+                {user.reviews.map((r) => (
+                  <div key={r.id} className="rounded-xl border border-line px-4 py-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[13px] font-semibold text-ink">{r.title || r.dorm.name}</span>
+                      <span className="rounded-pill px-2 py-0.5 text-[10.5px] font-semibold" style={{
+                        background: r.status === "APPROVED" ? "#e7f6ef" : r.status === "PENDING" ? "#FFF7ED" : "#fbe7e3",
+                        color: r.status === "APPROVED" ? "#177a52" : r.status === "PENDING" ? "#96690f" : "#b23a28",
+                      }}>
+                        {r.status === "APPROVED" ? "Onaylı" : r.status === "PENDING" ? "Bekliyor" : "Kaldırıldı"}
+                      </span>
+                    </div>
+                    <p className="text-[12.5px] text-body leading-relaxed">
+                      {r.text.length > 150 ? r.text.slice(0, 147) + "..." : r.text}
+                    </p>
+                    <div className="mt-1.5 text-[11px] text-faint">{r.dorm.name}, {r.dorm.city} · {formatDate(r.createdAt)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 

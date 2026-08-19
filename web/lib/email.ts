@@ -1,10 +1,11 @@
-import sgMail from "@sendgrid/mail";
+import { Resend } from "resend";
 import { createHmac, randomInt } from "crypto";
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY!;
-if (!process.env.SENDGRID_API_KEY) throw new Error("SENDGRID_API_KEY is required");
-
-sgMail.setApiKey(SENDGRID_API_KEY);
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY is required");
+  return new Resend(key);
+}
 
 const FROM_EMAIL = "noreply@ortamnasil.com";
 const FROM_NAME = "OrtamNasıl?";
@@ -26,9 +27,10 @@ export function generateTempPassword(): string {
 }
 
 export async function sendTempPasswordEmail(email: string, tempPassword: string): Promise<void> {
-  await sgMail.send({
+  const resend = getResend();
+  const { error } = await resend.emails.send({
     to: email,
-    from: { email: FROM_EMAIL, name: FROM_NAME },
+    from: `${FROM_NAME} <${FROM_EMAIL}>`,
     subject: "OrtamNasıl — Geçici şifren",
     text: `Geçici şifren: ${tempPassword}\n\nBu şifreyle giriş yap: https://www.ortamnasil.com/giris\n\nGiriş yaptıktan sonra yeni şifreni belirlemen istenecek.\n\nBu e-postayı sen istemediysen görmezden gelebilirsin.`,
     html: `
@@ -53,6 +55,7 @@ export async function sendTempPasswordEmail(email: string, tempPassword: string)
       </div>
     `,
   });
+  if (error) throw new Error(error.message);
 }
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "gokhansk1989@gmail.com";
@@ -63,10 +66,11 @@ export function notifyAdmin(subject: string, lines: { label: string; value: stri
     .join("");
   const text = lines.map((l) => `${l.label}: ${l.value}`).join("\n");
 
-  sgMail
+  const resend = getResend();
+  resend.emails
     .send({
       to: ADMIN_EMAIL,
-      from: { email: FROM_EMAIL, name: FROM_NAME },
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
       subject: `[OrtamNasıl] ${subject}`,
       text,
       html: `
@@ -80,9 +84,10 @@ export function notifyAdmin(subject: string, lines: { label: string; value: stri
 }
 
 export async function sendVerificationEmail(email: string, code: string): Promise<void> {
-  await sgMail.send({
+  const resend = getResend();
+  const { error } = await resend.emails.send({
     to: email,
-    from: { email: FROM_EMAIL, name: FROM_NAME },
+    from: `${FROM_NAME} <${FROM_EMAIL}>`,
     subject: `${code} — OrtamNasıl doğrulama kodun`,
     text: `OrtamNasıl doğrulama kodun: ${code}\n\nBu kod 15 dakika geçerlidir.\n\nBu e-postayı sen istemediysen görmezden gelebilirsin.`,
     html: `
@@ -104,4 +109,5 @@ export async function sendVerificationEmail(email: string, code: string): Promis
       </div>
     `,
   });
+  if (error) throw new Error(error.message);
 }

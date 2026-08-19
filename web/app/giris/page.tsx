@@ -49,7 +49,7 @@ const STATIC_SHOWCASE = [
 ];
 
 type Tab = "kayit" | "giris";
-type Step = "form" | "verify" | "change-password";
+type Step = "form" | "verify" | "verify-prompt" | "change-password";
 
 export default function GirisPage() {
   const router = useRouter();
@@ -123,8 +123,10 @@ export default function GirisPage() {
       if (data.needsVerification) {
         setUserId(data.id);
         setStep("verify");
-        setSuccess("Doğrulama kodu e-postana gönderildi!");
-        startResendCooldown();
+        setSuccess(data.emailSent === false
+          ? "Hesabın oluşturuldu! E-posta gönderilemedi, 'Tekrar gönder' butonunu dene."
+          : "Doğrulama kodu e-postana gönderildi!");
+        if (data.emailSent !== false) startResendCooldown();
       }
     } catch {
       setError("Sunucuya ulaşılamadı");
@@ -158,6 +160,10 @@ export default function GirisPage() {
       if (data.emailVerified === false) {
         sessionStorage.setItem("ortamnasil_verify_email", email);
         sessionStorage.setItem("ortamnasil_verify_uid", data.id);
+        setUserId(data.id);
+        setStep("verify-prompt");
+        setSuccess("");
+        return;
       }
       setSuccess(`Tekrar hoş geldin ${data.nick}!`);
       setTimeout(() => router.push(getReturnPath()), 1200);
@@ -507,6 +513,71 @@ export default function GirisPage() {
 
                 <p className="text-center text-[12.5px] leading-normal text-faint2">
                   Spam klasörünü kontrol etmeyi unutma.
+                </p>
+              </div>
+            </>
+          )}
+
+          {step === "verify-prompt" && (
+            <>
+              <div className="mb-7 text-center">
+                <div className="mb-3 text-[44px]">📧</div>
+                <h1 className="mb-2.5 text-[32px] font-bold tracking-[-.5px] text-ink">
+                  E-postan doğrulanmamış
+                </h1>
+                <p className="text-[15.5px] leading-relaxed text-muted">
+                  <span className="font-semibold text-ink">{email}</span> adresine doğrulama kodu gönderelim mi?
+                  Doğrulanmış hesaplar anket doldurabilir.
+                </p>
+              </div>
+
+              <div className="grid gap-4 rounded-[22px] border border-line bg-card px-9 py-8 shadow-lg max-md:px-6">
+                {error && (
+                  <div className="rounded-xl bg-red-50 px-4 py-3 text-[14px] font-medium text-red-600">
+                    {error}
+                  </div>
+                )}
+
+                {success && (
+                  <div className="rounded-xl bg-green-50 px-4 py-3 text-[14px] font-medium text-green-700">
+                    {success}
+                  </div>
+                )}
+
+                <button
+                  onClick={async () => {
+                    setLoading(true);
+                    setError("");
+                    try {
+                      const res = await fetch("/api/auth/tekrar-gonder", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) { setError(data.error || "Bir hata oluştu"); return; }
+                      if (data.userId) setUserId(data.userId);
+                      setStep("verify");
+                      setSuccess("Doğrulama kodu gönderildi!");
+                      startResendCooldown();
+                    } catch { setError("Sunucuya ulaşılamadı"); }
+                    finally { setLoading(false); }
+                  }}
+                  disabled={loading}
+                  className="gradient-pink rounded-xl py-[15px] text-base font-bold text-white shadow-glow transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+                >
+                  {loading ? "Gönderiliyor..." : "Doğrulama kodu gönder"}
+                </button>
+
+                <button
+                  onClick={() => router.push(getReturnPath())}
+                  className="rounded-xl border-2 border-line py-[13px] text-[15px] font-semibold text-faint transition-all hover:border-primary/30 hover:text-ink"
+                >
+                  Şimdilik geç
+                </button>
+
+                <p className="text-center text-[12.5px] leading-normal text-faint2">
+                  Doğrulanmamış hesaplar anket dolduramaz. Daha sonra da doğrulayabilirsin.
                 </p>
               </div>
             </>

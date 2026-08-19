@@ -20,6 +20,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Giriş yapılmamış" }, { status: 401 });
   }
 
+  const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: { emailVerified: true } });
+  if (!currentUser?.emailVerified) {
+    return NextResponse.json({ error: "E-posta doğrulanmamış", code: "EMAIL_NOT_VERIFIED" }, { status: 403 });
+  }
+
   try {
     const { dormId, answers, period, comment } = await req.json();
 

@@ -10,12 +10,16 @@ const outfit = Outfit({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-outfit",
+  display: "swap",
+  preload: true,
 });
 
 const mono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   variable: "--font-mono",
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -100,14 +104,11 @@ export default function RootLayout({
     <html lang="tr" className={`${outfit.variable} ${mono.variable}`}>
       <head>
         <link rel="alternate" hrefLang="tr" href="https://www.ortamnasil.com" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4400330012095219"
-          crossOrigin="anonymous"
         />
       </head>
       <body>
@@ -127,6 +128,11 @@ export default function RootLayout({
             {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');fbq('track','PageView');`}
           </Script>
         )}
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4400330012095219"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
         {children}
       </body>
     </html>

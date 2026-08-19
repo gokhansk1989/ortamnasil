@@ -57,35 +57,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Bu bilgilerle işlem yapılamadı" }, { status: 409 });
     }
 
-    const user = await prisma.user.create({
-      data: {
-        nick: trimmedNick,
-        isAdult: true,
-        emailVerified: false,
-      },
-    });
-
     const passwordHash = await bcrypt.hash(password, 12);
-
-    await prisma.authCredential.create({
-      data: {
-        emailHash,
-        passwordHash,
-        userId: user.id,
-      },
-    });
-
     const code = generateCode();
 
-    await prisma.emailVerification.create({
-      data: {
-        userId: user.id,
-        codeHash: hashCode(code),
-        expiresAt: new Date(Date.now() + CODE_TTL_MS),
-      },
+    const user = await prisma.$transaction(async (tx) => {
+      const u = await tx.user.create({
+        data: {
+          nick: trimmedNick,
+          isAdult: true,
+          emailVerified: false,
+        },
+      });
+
+      await tx.authCredential.create({
+        data: {
+          emailHash,
+          passwordHash,
+          userId: u.id,
+        },
+      });
+
+      await tx.emailVerification.create({
+        data: {
+          userId: u.id,
+          codeHash: hashCode(code),
+          expiresAt: new Date(Date.now() + CODE_TTL_MS),
+        },
+      });
+
+      return u;
     });
 
-    await sendVerificationEmail(email.toLowerCase().trim(), code);
+    let emailSent = true;
+    try {
+      await sendVerificationEmail(email.toLowerCase().trim(), code);
+    } catch (emailErr) {
+      emailSent = false;
+      console.error("[kayit] E-posta gönderilemedi:", emailErr);
+    }
 
     notifyAdmin("Yeni üye kaydoldu", [
       { label: "Nick", value: trimmedNick },
@@ -96,9 +105,13 @@ export async function POST(req: NextRequest) {
       id: user.id,
       nick: user.nick,
       needsVerification: true,
-      message: "Doğrulama kodu e-postana gönderildi",
+      emailSent,
+      message: emailSent
+        ? "Doğrulama kodu e-postana gönderildi"
+        : "Hesap oluşturuldu ama doğrulama e-postası gönderilemedi. Lütfen tekrar dene.",
     }, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error("[kayit] Kayıt hatası:", err);
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
 }

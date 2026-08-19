@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { prisma } from "@/lib/prisma";
 import { lightFromRatio } from "@/lib/lights";
 
+export const runtime = "nodejs";
 export const alt = "OrtamNasıl? — Yurt Değerlendirme";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -128,12 +129,13 @@ export default async function OGImage({ params }: { params: { id: string } }) {
 
         <div
           style={{
+            display: "flex",
             fontSize: "22px",
             color: "#a1a1aa",
             marginBottom: "32px",
           }}
         >
-          {type && city ? `${type} · ${city} · ` : ""}{surveyCount} değerlendirme
+          {type && city ? `${type} · ${city} · ${surveyCount} değerlendirme` : `${surveyCount} değerlendirme`}
         </div>
 
         <div

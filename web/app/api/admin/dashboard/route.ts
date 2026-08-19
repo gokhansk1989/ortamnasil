@@ -11,7 +11,9 @@ export async function GET(req: NextRequest) {
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const yesterdayStart = new Date(todayStart.getTime() - 86400000);
+  const weekAgo = new Date(now.getTime() - 7 * 86400000);
+  const twoWeeksAgo = new Date(now.getTime() - 14 * 86400000);
 
   const [
     pendingReports,
@@ -28,6 +30,17 @@ export async function GET(req: NextRequest) {
     lightDist,
     recentReports,
     recentPendingReviews,
+    todaySurveys,
+    yesterdaySurveys,
+    todayUsers,
+    yesterdayUsers,
+    lastWeekUsers,
+    thisWeekSurveys,
+    lastWeekSurveys,
+    recentSurveyActivity,
+    recentUserActivity,
+    dailySurveys,
+    dailyUsers,
   ] = await Promise.all([
     prisma.report.count({ where: { status: "PENDING" } }),
     prisma.review.count({ where: { status: "PENDING" } }),
@@ -59,6 +72,41 @@ export async function GET(req: NextRequest) {
         user: { select: { nick: true } },
       },
     }),
+    prisma.survey.count({ where: { createdAt: { gte: todayStart } } }),
+    prisma.survey.count({ where: { createdAt: { gte: yesterdayStart, lt: todayStart } } }),
+    prisma.user.count({ where: { createdAt: { gte: todayStart } } }),
+    prisma.user.count({ where: { createdAt: { gte: yesterdayStart, lt: todayStart } } }),
+    prisma.user.count({ where: { createdAt: { gte: twoWeeksAgo, lt: weekAgo } } }),
+    prisma.survey.count({ where: { createdAt: { gte: weekAgo } } }),
+    prisma.survey.count({ where: { createdAt: { gte: twoWeeksAgo, lt: weekAgo } } }),
+    prisma.survey.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 15,
+      select: {
+        id: true,
+        light: true,
+        createdAt: true,
+        user: { select: { nick: true } },
+        dorm: { select: { name: true } },
+      },
+    }),
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 15,
+      select: { id: true, nick: true, emailVerified: true, createdAt: true },
+    }),
+    prisma.$queryRaw<{ d: string; c: bigint }[]>`
+      SELECT DATE("createdAt") as d, COUNT(*)::bigint as c
+      FROM "Survey"
+      WHERE "createdAt" >= ${new Date(now.getTime() - 30 * 86400000)}
+      GROUP BY DATE("createdAt")
+      ORDER BY d`,
+    prisma.$queryRaw<{ d: string; c: bigint }[]>`
+      SELECT DATE("createdAt") as d, COUNT(*)::bigint as c
+      FROM "User"
+      WHERE "createdAt" >= ${new Date(now.getTime() - 30 * 86400000)}
+      GROUP BY DATE("createdAt")
+      ORDER BY d`,
   ]);
 
   const totalSurveys = lightDist.reduce((s, d) => s + d._count, 0);
@@ -80,6 +128,37 @@ export async function GET(req: NextRequest) {
     createdAt: r.createdAt.toISOString(),
   }));
 
+  const activity = [
+    ...recentSurveyActivity.map((s) => ({
+      type: "survey" as const,
+      nick: s.user.nick,
+      detail: s.dorm.name,
+      light: s.light,
+      createdAt: s.createdAt.toISOString(),
+    })),
+    ...recentUserActivity.map((u) => ({
+      type: "user" as const,
+      nick: u.nick,
+      detail: u.emailVerified ? "Doğrulanmış" : "Doğrulanmamış",
+      light: null,
+      createdAt: u.createdAt.toISOString(),
+    })),
+  ]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 20);
+
+  const last30 = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date(todayStart.getTime() - (29 - i) * 86400000);
+    const key = date.toISOString().slice(0, 10);
+    const surveyRow = dailySurveys.find((r) => String(r.d).slice(0, 10) === key);
+    const userRow = dailyUsers.find((r) => String(r.d).slice(0, 10) === key);
+    return {
+      date: key,
+      surveys: surveyRow ? Number(surveyRow.c) : 0,
+      users: userRow ? Number(userRow.c) : 0,
+    };
+  });
+
   return NextResponse.json({
     kpis: {
       pendingReports,
@@ -94,6 +173,16 @@ export async function GET(req: NextRequest) {
       surveyCount,
       redCount,
     },
+    trends: {
+      todaySurveys,
+      yesterdaySurveys,
+      todayUsers,
+      yesterdayUsers,
+      thisWeekSurveys,
+      lastWeekSurveys,
+      thisWeekUsers: weeklyUsers,
+      lastWeekUsers,
+    },
     distribution,
     queue,
     pendingReviewQueue: recentPendingReviews.map((r) => ({
@@ -106,5 +195,7 @@ export async function GET(req: NextRequest) {
       dormCity: r.dorm.city,
       createdAt: r.createdAt.toISOString(),
     })),
+    activity,
+    chartData: last30,
   });
 }

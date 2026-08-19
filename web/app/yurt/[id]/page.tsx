@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { ShareButtons } from "@/components/ShareButtons";
 import { DormReviews } from "@/components/DormReviews";
 import { DormSurveyNudge } from "@/components/DormSurveyNudge";
+import { AdSlot } from "@/components/AdSlot";
 import { LIGHTS, lightFromRatio, type LightKey } from "@/lib/lights";
 import { prisma } from "@/lib/prisma";
 import type { ProfileReview } from "@/lib/directory";
@@ -474,12 +475,16 @@ export default async function DormPage({ params }: { params: { id: string } }) {
               </div>
             </div>
 
+            <AdSlot slot="7650614059" format="fluid" layout="in-article" className="mb-5 rounded-[22px] border border-line bg-card p-4" />
+
             {/* İTİRAFLAR / YORUMLAR */}
             <DormReviews
               dormId={c.id}
               fallbackReviews={c.fallbackReviews}
               totalCount={c.totalReviewCount}
             />
+
+            <AdSlot slot="1711891665" format="fluid" layout="in-article" className="mt-5 rounded-[22px] border border-line bg-card p-4" />
           </div>
 
           {/* SAĞ SÜTUN */}

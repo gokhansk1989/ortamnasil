@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { LIGHTS, type LightKey } from "@/lib/lights";
+import { AdSlot } from "@/components/AdSlot";
 
 export interface DormRow {
   id: string;
@@ -139,9 +140,12 @@ export function YurtlarExplorer({
       ) : paged.length > 0 ? (
         <>
           <div className="grid gap-3">
-            {paged.map((c) => {
+            {paged.map((c, idx) => {
               const l = LIGHTS[c.light];
               return (
+                <>{idx > 0 && idx % 8 === 0 && (
+                  <AdSlot key={`ad-${idx}`} slot="6971228259" format="fluid" layout="in-article" className="rounded-card border border-line bg-card p-4" />
+                )}
                 <Link
                   key={c.id}
                   href={`/yurt/${c.id}`}
@@ -171,6 +175,7 @@ export function YurtlarExplorer({
                     <span className="font-mono text-xs text-faint2">{c.reviews} yorum</span>
                   </div>
                 </Link>
+                </>
               );
             })}
           </div>

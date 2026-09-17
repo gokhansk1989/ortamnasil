@@ -1,5 +1,9 @@
 # syntax=docker/dockerfile:1
 FROM node:20-alpine AS base
+# Prisma sorgu motoru OpenSSL'e baglidir. Alpine 3.19+ openssl3 ile geliyor ve
+# paket yoksa Prisma yanlis motoru (libssl 1.1) secip
+# "Error loading shared library libssl.so.1.1" ile kiriliyor.
+RUN apk add --no-cache openssl libc6-compat
 
 # --- Dependencies ---
 FROM base AS deps

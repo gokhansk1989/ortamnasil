@@ -222,7 +222,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const c = await getDormData(params.id);
   if (!c) return { title: "Yurt bulunamadı" };
 
-  const title = `${c.name} Değerlendirme — ${c.city} ${c.type} Yurt Yorumları`;
+  const year = new Date().getFullYear();
+  const title = `${c.name} Yorumları ${year} — ${c.city} ${c.type} Yurt Değerlendirmesi`;
   const description = c.surveyCount > 0
     ? `${c.name} hakkında ${c.surveyCount} anonim öğrenci yorumu. ${c.type} · ${c.city}${c.district ? " " + c.district : ""}. Yemek, temizlik, internet, giriş saati ve daha fazlası.`
     : `${c.name} — ${c.city}${c.district ? " " + c.district : ""} ${c.type} yurt hakkında öğrenci deneyimleri. Yemek kalitesi, oda temizliği, internet hızı, güvenlik değerlendirmeleri.`;
@@ -232,7 +233,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     description,
     alternates: { canonical: `https://www.ortamnasil.com/yurt/${params.id}` },
     openGraph: { title, description, type: "article", url: `https://www.ortamnasil.com/yurt/${params.id}` },
-    ...(c.surveyCount === 0 && { robots: { index: false, follow: true } }),
+    keywords: [
+      `${c.name} yorumları`,
+      `${c.name} nasıl`,
+      `${c.city} ${c.type} yurt`,
+      `${c.city} yurt tavsiye`,
+    ],
   };
 }
 

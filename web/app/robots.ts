@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/admin/", "/profil/", "/giris", "/anket", "/opengraph-image", "/favicon.ico"],
+        disallow: ["/api/", "/admin/", "/profil/", "/opengraph-image", "/favicon.ico", "/yurt/*/opengraph-image"],
       },
     ],
     sitemap: "https://www.ortamnasil.com/sitemap.xml",

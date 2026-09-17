@@ -1,0 +1,10 @@
+node_modules
+.next
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+*.md
+data/devlet_yurtlari.tsv
+data/ozel_yurtlar.tsv

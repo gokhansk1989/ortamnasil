@@ -32,17 +32,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   ]);
 
-  const dormPages: MetadataRoute.Sitemap = dorms
-    .filter((d) => d._count.surveys > 0)
-    .map((d) => ({
-      url: `${BASE}/yurt/${d.id}`,
-      lastModified: d.createdAt.toISOString(),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
+  const dormPages: MetadataRoute.Sitemap = dorms.map((d) => ({
+    url: `${BASE}/yurt/${d.id}`,
+    lastModified: d.createdAt.toISOString(),
+    changeFrequency: "weekly" as const,
+    priority: d._count.surveys > 0 ? 0.8 : 0.6,
+  }));
 
-  const dormsWithSurveys = dorms.filter((d) => d._count.surveys > 0);
-  const uniqueCities = [...new Set(dormsWithSurveys.map((d) => d.city))];
+  const uniqueCities = [...new Set(dorms.map((d) => d.city))];
   const cityPages: MetadataRoute.Sitemap = uniqueCities.map((city) => ({
     url: `${BASE}/sehir/${encodeURIComponent(city.toLocaleLowerCase("tr").replace(/\s+/g, "-"))}`,
     lastModified: now,
@@ -51,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const uniqueUnis = [...new Set(
-    dormsWithSurveys.map((d) => d.nearCampus).filter((n): n is string => !!n),
+    dorms.map((d) => d.nearCampus).filter((n): n is string => !!n),
   )];
   const uniPages: MetadataRoute.Sitemap = uniqueUnis.map((uni) => ({
     url: `${BASE}/universite/${encodeURIComponent(uni.toLocaleLowerCase("tr").replace(/\s+/g, "-"))}`,

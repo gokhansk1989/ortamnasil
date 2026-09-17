@@ -74,8 +74,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const data = await getCityData(params.slug);
   if (!data) return { title: "Şehir bulunamadı" };
 
-  const title = `${data.city} Yurtları — KYK ve Özel Yurt Değerlendirmeleri`;
-  const description = `${data.city} şehrindeki ${data.dorms.length} yurdun anonim öğrenci değerlendirmeleri. ${data.kykCount} KYK, ${data.ozelCount} özel yurt. Ortam skorları, yemek, internet, temizlik yorumları.`;
+  const year = new Date().getFullYear();
+  const title = `${data.city} KYK ve Özel Yurt Yorumları ${year} — Öğrenci Değerlendirmeleri`;
+  const description = `${data.city} yurt yorumları: ${data.dorms.length} yurdu karşılaştır. ${data.kykCount} KYK, ${data.ozelCount} özel yurt. Yemek, internet, temizlik, giriş saati — gerçek öğrenci değerlendirmeleri.`;
 
   return {
     title,
@@ -86,7 +87,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description,
       url: `https://www.ortamnasil.com/sehir/${params.slug}`,
     },
-    ...(data.totalSurveys === 0 && { robots: { index: false, follow: true } }),
+    keywords: [
+      `${data.city} yurt`,
+      `${data.city} KYK yurt`,
+      `${data.city} öğrenci yurdu`,
+      `${data.city} yurt yorumları`,
+      `${data.city} yurt tavsiye`,
+      `${data.city} özel yurt fiyatları`,
+    ],
   };
 }
 
@@ -121,6 +129,9 @@ export default async function CityPage({ params }: { params: { slug: string } })
     { q: `${data.city} KYK yurtları nasıl?`, a: `${data.city} şehrinde ${data.kykCount} adet KYK yurdu bulunmaktadır. Yurtların kalitesi değişkenlik göstermektedir; detaylı öğrenci değerlendirmeleri için yurt sayfalarını inceleyebilirsiniz.` },
     { q: `${data.city} özel yurt fiyatları ne kadar?`, a: `${data.city} şehrinde ${data.ozelCount} adet özel yurt ve apart bulunmaktadır. Fiyatlar konuma, oda tipine ve sunulan hizmetlere göre değişmektedir. Gerçek öğrenci deneyimleri için yurt değerlendirmelerini okuyabilirsiniz.` },
     { q: `${data.city} yurtlarında toplam kaç değerlendirme var?`, a: `${data.city} şehrindeki yurtlar için şu ana kadar ${data.totalSurveys} adet anonim öğrenci değerlendirmesi yapılmıştır.` },
+    { q: `${data.city} en iyi yurt hangisi?`, a: `${data.city} şehrindeki en iyi yurdu bulmak için yukarıdaki yurt listesine bakabilirsiniz. Her yurdun yanındaki "ortam ışığı" yeşil, sarı veya kırmızı olarak öğrencilerin genel memnuniyetini gösterir. Yeşil ışıklı yurtlar öğrenciler tarafından tavsiye edilen yurtlardır.` },
+    { q: `${data.city} KYK yurt başvurusu nasıl yapılır?`, a: `KYK yurt başvuruları her yıl e-Devlet üzerinden yapılmaktadır. Başvuru dönemleri genellikle Ağustos-Eylül aylarında açılır. Tercih yapmadan önce ${data.city} yurtlarının öğrenci değerlendirmelerini incelemenizi öneririz.` },
+    { q: `${data.city} yurdunda internet var mı?`, a: `${data.city} KYK yurtlarında genellikle ücretsiz Wi-Fi bulunmaktadır ancak hız ve kalite yurda göre değişmektedir. Özel yurtlarda internet genellikle daha hızlıdır. Her yurdun detay sayfasında internet kalitesi hakkında öğrenci yorumlarını okuyabilirsiniz.` },
   ];
 
   const faqJsonLd = {
@@ -156,12 +167,12 @@ export default async function CityPage({ params }: { params: { slug: string } })
 
         <div className="mb-8">
           <h1 className="mb-3 text-[32px] font-bold tracking-[-0.5px] text-ink">
-            {data.city} Yurtları
+            {data.city} Yurt Yorumları ve Değerlendirmeleri
           </h1>
           <p className="max-w-[640px] text-[16px] leading-relaxed text-muted">
-            {data.city} şehrindeki {data.dorms.length} yurdun anonim öğrenci
-            değerlendirmeleri. Yemek, internet, temizlik, giriş saati — kaydolmadan
-            önce içerden öğren.
+            {data.city} şehrindeki {data.dorms.length} KYK ve özel yurdu karşılaştır.
+            Yemek kalitesi, internet hızı, temizlik, giriş-çıkış saatleri — gerçek
+            öğrenci deneyimlerini oku, en iyi yurdu bul.
           </p>
         </div>
 
@@ -268,7 +279,7 @@ export default async function CityPage({ params }: { params: { slug: string } })
         {/* SEO İÇERİK */}
         <div className="mt-10 mb-8 rounded-[18px] border border-line bg-card p-7 max-md:p-5">
           <h2 className="mb-3 text-[20px] font-bold text-ink">
-            {data.city} Yurt Rehberi
+            {data.city} Yurt Rehberi {new Date().getFullYear()}
           </h2>
           <div className="space-y-3 text-[14.5px] leading-relaxed text-muted">
             <p>
@@ -283,6 +294,13 @@ export default async function CityPage({ params }: { params: { slug: string } })
               OrtamNasıl? üzerinden {data.city} yurtlarının yemek kalitesi, internet hızı,
               temizlik durumu, giriş-çıkış saatleri ve genel ortam hakkında gerçek öğrenci
               deneyimlerini okuyabilirsin. Tüm değerlendirmeler tamamen anonim ve bağımsızdır.
+            </p>
+            <p>
+              {data.city} yurt seçimi yaparken dikkat etmen gerekenler: KYK yurtlarında giriş-çıkış
+              saati genellikle 23:00-23:30 arasıdır, yemek dâhildir ve oda kapasitesi 4-8 kişiliktir.
+              Özel yurtlarda ise genellikle giriş saati kısıtlaması yoktur, 1-3 kişilik odalar
+              mevcuttur ve fiyatlar konuma göre değişir. Yurt tercihini yapmadan önce aynı
+              şehirdeki yurtların öğrenci değerlendirmelerini karşılaştırmanı öneririz.
             </p>
           </div>
         </div>

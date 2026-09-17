@@ -24,4 +24,3 @@ out/
 # backups & migration
 migration_backup_*/
 *.dump
-MIGRATION_GUIDE.md

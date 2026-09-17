@@ -6,26 +6,10 @@ services:
     container_name: ortamnasil
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3003:3000"
     env_file:
       - ./web/.env
     environment:
       - NODE_ENV=production
-    depends_on:
-      - db
-
-  db:
-    image: postgres:16-alpine
-    container_name: ortamnasil-db
-    restart: unless-stopped
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ortamnasil
-      POSTGRES_USER: ortamnasil_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
-    ports:
-      - "127.0.0.1:5432:5432"
-
-volumes:
-  pgdata:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

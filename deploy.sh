@@ -1,22 +1,21 @@
 #!/bin/bash
 # OrtamNasıl? — Hetzner Deploy Script
-# Kullanım: ./deploy.sh
+# Port: 3003 (motorya 3000'de, çakışma yok)
+# DB: mevcut PostgreSQL'deki ortamnasil database'i (ayrı container yok)
+# Proxy: mevcut nginx'e server bloğu eklendi
 set -euo pipefail
 
 echo "=== OrtamNasıl? Deploy ==="
 
-# Git pull
 echo "1. Pulling latest code..."
 git pull origin main
 
-# Docker build & restart
-echo "2. Building and restarting..."
+echo "2. Building and restarting app container..."
 docker compose up -d --build
 
-# Prisma migrate (if needed)
 echo "3. Running database migrations..."
 docker compose exec app npx prisma db push --accept-data-loss=false
 
 echo ""
 echo "=== Deploy complete ==="
-echo "Site: https://www.ortamnasil.com"
+echo "App: http://127.0.0.1:3003 (nginx üzerinden https://www.ortamnasil.com)"

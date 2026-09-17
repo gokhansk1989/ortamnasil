@@ -1,7 +1,0 @@
-www.ortamnasil.com {
-	reverse_proxy localhost:3000
-}
-
-ortamnasil.com {
-	redir https://www.ortamnasil.com{uri} permanent
-}

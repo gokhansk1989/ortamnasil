@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM node:20-alpine AS base
 
 # --- Dependencies ---
@@ -13,7 +14,13 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+# Next, derleme sirasinda bazi modulleri degerlendirdigi icin env'e ihtiyac
+# duyuyor (orn. AUTH_PEPPER). Vercel bunu kendisi enjekte ediyordu; burada
+# .env .dockerignore ile dislandigi icin derleme "AUTH_PEPPER is required"
+# diyerek kiriliyordu.
+# Secret mount kullaniyoruz: deger derleme sirasinda gorunur ama imaj
+# katmanlarinda iz birakmaz (build-arg olsaydi imaj gecmisinde kalirdi).
+RUN --mount=type=secret,id=env,target=/app/.env,required=true npm run build
 
 # --- Runner ---
 FROM base AS runner

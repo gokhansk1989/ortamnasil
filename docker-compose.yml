@@ -5,6 +5,12 @@ services:
       dockerfile: Dockerfile
       secrets:
         - env
+      # Sitemap gibi sayfalar derleme sirasinda veritabanina sorgu atiyor.
+      # extra_hosts yalnizca calisma anindaki konteynere uygulaniyor; derleme
+      # asamasinda da ayni esleme gerekiyor, yoksa "Can't reach database
+      # server at host.docker.internal" ile kiriliyor.
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
     container_name: ortamnasil
     restart: unless-stopped
     ports:

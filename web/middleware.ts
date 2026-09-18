@@ -34,11 +34,11 @@ const SECURITY_HEADERS: Record<string, string> = {
     "default-src 'self'",
     // GA4 ve Meta Pikseli harici betikten yüklenir; alan adları izinli olmazsa
     // ölçüm hiçbir hata vermeden sessizce durur.
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net https://pagead2.googlesyndication.com https://static.cloudflareinsights.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://www.google-analytics.com https://*.google-analytics.com https://www.facebook.com",
-    "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
+    "img-src 'self' data: blob: https://www.google-analytics.com https://*.google-analytics.com https://www.facebook.com https://pagead2.googlesyndication.com",
+    "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net https://pagead2.googlesyndication.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
